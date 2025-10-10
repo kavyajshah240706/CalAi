@@ -1,3 +1,6 @@
+import matplotlib
+matplotlib.use('Agg')  # This makes plots save to files instead of showing on screen
+import matplotlib.pyplot as plt
 import os
 import argparse
 import numpy as np
@@ -9,7 +12,6 @@ from scipy.stats import skew
 from keras.models import Model, model_from_json
 import keras.backend as K
 from fuzzywuzzy import fuzz, process 
-import matplotlib.pyplot as plt
 from food_volume_estimation.depth_estimation.custom_modules import *
 from food_volume_estimation.depth_estimation.project import *
 from food_volume_estimation.food_segmentation.food_segmentator import FoodSegmentator
@@ -286,6 +288,7 @@ class VolumeEstimator():
 
         # Iterate over all predicted masks and estimate volumes
         estimated_volumes = []
+        image_filenames = []
         for k in range(masks_array.shape[-1]):
             # Apply mask to create object image and depth map
             object_mask = cv2.resize(masks_array[:,:,k], 
@@ -400,13 +403,18 @@ class VolumeEstimator():
                 if plot_results:
                     plt.show()
                 if plots_directory is not None:
-                    if not os.path.exists(plots_directory):
-                        os.makedirs(plots_directory)
-                    (img_name, ext) = os.path.splitext(
-                        os.path.basename(input_image))
-                    filename = '{}_{}{}'.format(img_name, plt.gcf().number,
-                                                ext)
-                    plt.savefig(os.path.join(plots_directory, filename))
+                    # Save images independently outside food_volume_estimation
+                    parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                    
+                    # Extract output number from plots_directory name
+                    import re
+                    match = re.search(r'output(\d+)', plots_directory)
+                    output_num = match.group(1) if match else '1'
+                    
+                    filename = f'output{output_num}_segment{k}.png'
+                    image_path = os.path.join(parent_dir, filename)
+                    plt.savefig(image_path)
+                    image_filenames.append(filename)
 
                 estimated_volumes.append(
                     (estimated_volume, object_points_df, non_object_points_df,
@@ -418,8 +426,9 @@ class VolumeEstimator():
                     object_points_transformed[:,2] > 0]
                 estimated_volume, _ = pc_to_volume(volume_points)
                 estimated_volumes.append(estimated_volume)
+                image_filenames.append(None)
 
-        return estimated_volumes
+        return estimated_volumes, image_filenames   
 
     def __create_intrinsics_matrix(self, input_image_shape, fov):
         """Create intrinsics matrix from given camera fov.
@@ -456,40 +465,67 @@ class VolumeEstimator():
 
 
 if __name__ == '__main__':
+    import json
+    
     estimator = VolumeEstimator()
 
     # Iterate over input images to estimate volumes
-    results = {'image_path': [], 'volumes': []}
+    all_segments_data = []
+    
     for input_image in estimator.args.input_images:
         print('[*] Input:', input_image)
-        volumes = estimator.estimate_volume(
+        
+        # Now returns both volumes and filenames
+        volumes, image_filenames = estimator.estimate_volume(
             input_image, estimator.args.fov, 
             estimator.args.plate_diameter_prior, estimator.args.plot_results,
             estimator.args.plots_directory)
 
-        # Store results per input image
-        results['image_path'].append(input_image)
-        if (estimator.args.plot_results 
-            or estimator.args.plots_directory is not None):
-            results['volumes'].append([x[0] * 1000 for x in volumes])
-            plt.close('all')
+        # Create structured data for each segment
+        if estimator.args.plot_results or estimator.args.plots_directory is not None:
+            volumes_ml = [x[0] * 1000 for x in volumes]
         else:
-            results['volumes'].append(volumes * 1000)
+            volumes_ml = [v * 1000 for v in volumes]
+        
+        # Build metadata for each segment
+        for idx, (vol, img_file) in enumerate(zip(volumes_ml, image_filenames)):
+            if img_file is not None:  # Only include segments with images
+                segment_data = {
+                    'segment_id': idx,
+                    'image_filename': img_file,
+                    'volume': float(vol),
+                    'image_path': os.path.join(estimator.args.plots_directory, img_file)
+                }
+                all_segments_data.append(segment_data)
+                print(f'[*] Segment {idx}: {vol:.2f} ml saved as {img_file}')
+        
+        plt.close('all')
 
-        # Print weight if density database is given
-        if estimator.args.density_db is not None:
-            db_entry = estimator.density_db.query(
-                estimator.args.food_type)
-            density = db_entry[1]
-            print('[*] Density database match:', db_entry)
-            # All foods found in the input image are considered to be
-            # of the same type
-            for v in results['volumes'][-1]:
-                print('[*] Food weight:', 1000 * v * density, 'g')
-
-    if estimator.args.results_file is not None:
-        # Save results in CSV format
-        volumes_df = pd.DataFrame(data=results)
-        volumes_df.to_csv(estimator.args.results_file, index=False)
-
+    # Save metadata as JSON
+# Save metadata as JSON independently outside food_volume_estimation
+        if estimator.args.plots_directory is not None and len(all_segments_data) > 0:
+            parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            
+            # Extract output number
+            import re
+            match = re.search(r'output(\d+)', estimator.args.plots_directory)
+            output_num = match.group(1) if match else '1'
+            
+            # Update image paths in metadata
+            for segment in all_segments_data:
+                segment['image_path'] = os.path.join(parent_dir, segment['image_filename'])
+            
+            metadata = {
+                'total_segments': len(all_segments_data),
+                'segments': all_segments_data
+            }
+            
+            metadata_file = os.path.join(parent_dir, f'output{output_num}.json')
+            with open(metadata_file, 'w') as f:
+                json.dump(metadata, f, indent=2)
+        
+        print(f'\n[*] ===== SUMMARY =====')
+        print(f'[*] Metadata saved to: {metadata_file}')
+        print(f'[*] Total segments: {len(all_segments_data)}')
+        print(f'[*] Total volume: {sum(s["volume"] for s in all_segments_data):.2f} litres')
 
