@@ -8,6 +8,57 @@ import os
 import config 
 from agents.dialogue_agent import DialogueAgent
 import base64
+import time
+
+# PASTE THIS ENTIRE FUNCTION AT THE TOP OF YOUR SCRIPT2.PY FILE
+
+def filter_metadata_file(filepath: str, min_volume: float = 0.1):
+    """
+    Opens the specified JSON file, removes segments with volume < min_volume,
+    and saves the changes back to the same file.
+    """
+    print("-" * 60)
+    print(f"CLEANUP: Filtering metadata file: {filepath}")
+    
+    if not os.path.exists(filepath):
+        print(f"❌ ERROR: Cannot filter file. Not found at '{filepath}'")
+        return False
+
+    try:
+        with open(filepath, 'r') as f:
+            metadata = json.load(f)
+
+        original_segments = metadata.get('segments', [])
+        if not original_segments:
+            print("No segments found in the file to filter.")
+            return True
+
+        print(f"Found {len(original_segments)} segments in file.")
+
+        filtered_segments = [
+            segment for segment in original_segments if segment.get('volume', 0) >= min_volume
+        ]
+
+        removed_count = len(original_segments) - len(filtered_segments)
+        if removed_count > 0:
+            print(f"Removing {removed_count} segment(s) with volume < {min_volume}L.")
+        else:
+            print("No segments needed to be removed.")
+
+        metadata['segments'] = filtered_segments
+        metadata['total_segments'] = len(filtered_segments)
+
+        with open(filepath, 'w') as f:
+            json.dump(metadata, f, indent=2)
+
+        print(f"✅ Successfully cleaned and saved '{filepath}'.")
+        print("-" * 60)
+        return True
+
+    except Exception as e:
+        print(f"❌ ERROR during file filtering: {e}")
+        print("-" * 60)
+        return False
 
 def call_volume_estimation_api(image_path, api_url='http://localhost:5000/estimate-volume'):
     print(f"Calling volume estimation API for image: {image_path}")
@@ -211,6 +262,7 @@ def run_vlm_analysis(metadata_path, api_key):
     
     return output
 
+
 def main():
     if len(sys.argv) < 2:
         print("Usage: python script2.py \"<path_to_your_image>\"")
@@ -223,32 +275,53 @@ def main():
     print("="*60 + "\n")
     
     # Step 1: Call Volume Estimation API
+    # Step 1: Call Volume Estimation API
     print("STEP 1: Volume Estimation")
     print("-" * 60)
-    metadata_file_path = call_volume_estimation_api(input_image_path)
-    if not metadata_file_path:
-        print("Error: Volume estimation failed")
-        return
-    print(f"Metadata saved: {metadata_file_path}\n")
     
+    volume_start_time = time.time()
+    metadata_file_path = call_volume_estimation_api(input_image_path)
+    volume_end_time = time.time()
+    print(f"Volume Estimation API call took: {volume_end_time - volume_start_time:.2f} seconds")
+    
+    # --- THIS IS THE FIX ---
+    # If the API call fails, now it will stop the entire pipeline.
+    if not metadata_file_path:
+        print("Critical Error: Volume estimation failed. Halting pipeline.")
+        sys.exit(1) # Changed from 'return' to 'sys.exit(1)'
+    # --- END OF FIX ---
+    
+    print(f"Metadata received: {metadata_file_path}\n")
+    if not filter_metadata_file(metadata_file_path):
+        print("Critical Error: Failed to filter metadata file. Halting pipeline.")
+        sys.exit(1)
+    
+    # Step 2: Run VLM Analysis
     # Step 2: Run VLM Analysis
     api_key = config.OPENAI_API_KEY
     if not api_key:
-        print("Error: Gemini API key not found in config.py")
-        return
+        print("Error: OpenAI API key not found in config.py")
+        sys.exit(1) # Changed from 'return' to 'sys.exit(1)'
     
+    vlm_start_time = time.time()
     vlm_results = run_vlm_analysis(metadata_file_path, api_key)
+    vlm_end_time = time.time()
+    print(f"VLM analysis took: {vlm_end_time - vlm_start_time:.2f} seconds")
     
-    # Save VLM results
     with open("vlm_analysis_output.json", 'w') as f:
         json.dump(vlm_results, f, indent=2)
     print(f"VLM results saved: vlm_analysis_output.json\n")
     
     # Step 3: Run Dialogue Agent for Confirmation
+    # Step 3: Run Dialogue Agent for Confirmation
     print("STEP 2: User Confirmation")
     print("-" * 60)
+    
+    dialogue_start_time = time.time()
     dialogue_agent = DialogueAgent(api_key=api_key)
     confirmed_results = dialogue_agent.confirm_analysis(vlm_results)
+    dialogue_end_time = time.time()
+    print(f"Dialogue Agent (including user input time) took: {dialogue_end_time - dialogue_start_time:.2f} seconds")
     
     # Step 4: Save Final Output
     FINAL_OUTPUT_FILE = "final_confirmed_output.json"

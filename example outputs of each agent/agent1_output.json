@@ -1,0 +1,64 @@
+{
+  "agent": "Agent 1: Culinary Decomposer",
+  "decomposed_foods": [
+    {
+      "original_food_name": "Grilled Chicken with Savory Sauce",
+      "total_volume_litres": 2.3101509024860736,
+      "reasoning": "The dish involves marinating chicken in a mixture of olive oil, vinegar, mustard, garlic, and spices, then grilling it. The marinade is boiled and strained to create a sauce. During grilling, the chicken loses some water content, concentrating its flavors. The sauce, made from the marinade, adds moisture and flavor back to the dish. The final product is a combination of grilled chicken and the savory sauce.",
+      "ingredient_volumes": [
+        {
+          "ingredient_name": "Grilled Chicken (cooked, water reduced)",
+          "percentage": 70,
+          "volume_litres": 1.6171056317402515,
+          "notes": "Main component, water content reduced during grilling, concentrating flavors"
+        },
+        {
+          "ingredient_name": "Savory Sauce (from marinade)",
+          "percentage": 30,
+          "volume_litres": 0.6930452707458221,
+          "notes": "Made from boiled and strained marinade, adds moisture and flavor"
+        }
+      ],
+      "modifications_applied": "User clarifications confirmed the focus on grilled chicken, guiding the analysis towards the transformation of chicken and marinade into a grilled dish with sauce.",
+      "is_basic_ingredient": false,
+      "sources": [
+        "https://thrivinghomeblog.com/the-best-savory-chicken-marinade/",
+        "https://www.allrecipes.com/recipe/30522/unbelievable-chicken/",
+        "https://therealfooddietitians.com/korean-bbq-chicken/"
+      ],
+      "segment_id": 0
+    },
+    {
+      "original_food_name": "Cooked Brown Rice",
+      "total_volume_litres": 4.014855197323493,
+      "is_basic_ingredient": true,
+      "reasoning": "Cooked brown rice is primarily composed of brown rice, with water being the only other significant component. Since the majority of the composition is brown rice, it qualifies as a simple food.",
+      "ingredient_volumes": [
+        {
+          "ingredient_name": "Cooked Brown Rice",
+          "percentage": 100,
+          "volume_litres": 4.014855197323493,
+          "notes": "Simple ingredient"
+        }
+      ],
+      "sources": [],
+      "segment_id": 1
+    },
+    {
+      "original_food_name": "Roasted Tomato Half",
+      "total_volume_litres": 0.2995410975281447,
+      "is_basic_ingredient": true,
+      "reasoning": "A roasted tomato half is primarily composed of a single ingredient, which is the tomato itself. The roasting process does not add significant quantities of other ingredients that would constitute more than 10% of the composition.",
+      "ingredient_volumes": [
+        {
+          "ingredient_name": "Roasted Tomato Half",
+          "percentage": 100,
+          "volume_litres": 0.2995410975281447,
+          "notes": "Simple ingredient"
+        }
+      ],
+      "sources": [],
+      "segment_id": 2
+    }
+  ]
+}

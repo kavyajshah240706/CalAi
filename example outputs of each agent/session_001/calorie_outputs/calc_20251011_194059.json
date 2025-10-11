@@ -1,0 +1,74 @@
+{
+  "agent": "Agent 3: Nutritional Profiler",
+  "nutritional_breakdown_per_segment": [
+    {
+      "segment_id": 0,
+      "food_name": "Grilled Tandoori Chicken",
+      "total_mass_grams": 2177.31,
+      "calculated_nutrition": {
+        "calories_kcal": 4790.08,
+        "protein_g": 508.62,
+        "fat_g": 257.79,
+        "carbohydrates_g": 95.8
+      },
+      "source_data": {
+        "found": true,
+        "serving_size_grams": 100,
+        "calories_kcal": 220,
+        "protein_g": 23.36,
+        "fat_g": 11.84,
+        "carbohydrates_g": 4.4,
+        "source_url": "https://www.fatsecret.co.in/calories-nutrition/search?q=Tandoori+Chicken",
+        "reasoning": "The most consistent and reliable data across multiple sources was for a 100g serving size, which is explicitly mentioned in the search results. The nutritional values for this serving size were consistent across the sources from FatSecret, providing a clear breakdown of calories, protein, fat, and carbohydrates. Therefore, I used the data from FatSecret as it was the most detailed and consistent."
+      }
+    },
+    {
+      "segment_id": 1,
+      "food_name": "Cooked Brown Rice",
+      "total_mass_grams": 2930.84,
+      "calculated_nutrition": {
+        "calories_kcal": 10612.73,
+        "protein_g": 215.96,
+        "fat_g": 78.67,
+        "carbohydrates_g": 2236.69
+      },
+      "source_data": {
+        "found": true,
+        "serving_size_grams": 190,
+        "calories_kcal": 688,
+        "protein_g": 14,
+        "fat_g": 5.1,
+        "carbohydrates_g": 145,
+        "source_url": "https://www.nutritionvalue.org/Rice%2C_raw%2C_medium-grain%2C_brown_nutritional_value.html",
+        "reasoning": "The serving size of 190 grams was identified from multiple sources as a common measurement for raw brown rice. The nutritional values for this serving size were consistently reported across sources, with the most detailed breakdown found on the Nutrition Value website. This source provided specific values for calories, protein, fat, and carbohydrates, making it the most reliable for extraction."
+      }
+    },
+    {
+      "segment_id": 2,
+      "food_name": "Grilled Tomato Halves with Herbs",
+      "total_mass_grams": 341.48,
+      "calculated_nutrition": {
+        "calories_kcal": 61.53,
+        "protein_g": 3.01,
+        "fat_g": 0.72,
+        "carbohydrates_g": 13.34
+      },
+      "source_data": {
+        "found": true,
+        "serving_size_grams": 238.1,
+        "calories_kcal": 42.9,
+        "protein_g": 2.1,
+        "fat_g": 0.5,
+        "carbohydrates_g": 9.3,
+        "source_url": "https://www.snapcalorie.com/nutrition/grilled_tomato_nutrition.html",
+        "reasoning": "The serving size of '1 cup' was converted to grams using the information provided in the source, which states that 1 cup of grilled tomatoes is approximately 238.1 grams. The nutritional values for this serving size were directly extracted from the same source."
+      }
+    }
+  ],
+  "total_nutrition_summary": {
+    "total_calories_kcal": 15464.34,
+    "total_protein_g": 727.59,
+    "total_fat_g": 337.18,
+    "total_carbohydrates_g": 2345.83
+  }
+}
