@@ -1,0 +1,119 @@
+{
+  "session_id": "session_001",
+  "started_at": "2025-10-12T19:58:38.722638",
+  "messages": [
+    {
+      "role": "user",
+      "content": "calculate calories",
+      "timestamp": "2025-10-12T19:58:38.745983",
+      "metadata": {
+        "has_image": true,
+        "image_path": "C:\\Users\\Kavya Shah\\Downloads\\food_volume_estimation\\Screenshot 2025-10-12 135136.png"
+      }
+    },
+    {
+      "role": "assistant",
+      "content": "\u2705 Calorie calculation complete!\n\nResults saved to: ./session_001/calorie_outputs/calc_20251012_200318.json",
+      "timestamp": "2025-10-12T20:03:18.778268",
+      "metadata": {
+        "agent": "CALORIE_MODEL",
+        "data": {
+          "agent": "Agent 3: Nutritional Profiler",
+          "nutritional_breakdown_per_segment": [
+            {
+              "segment_id": 0,
+              "food_name": "Chopped Fresh Spring Onion",
+              "total_mass_grams": 75.02,
+              "calculated_nutrition": {
+                "calories_kcal": 24.01,
+                "protein_g": 1.37,
+                "fat_g": 0.14,
+                "carbohydrates_g": 5.51
+              },
+              "source_data": {
+                "found": true,
+                "serving_size_grams": 100,
+                "calories_kcal": 32,
+                "protein_g": 1.83,
+                "fat_g": 0.19,
+                "carbohydrates_g": 7.34,
+                "source_url": "https://www.fatsecret.co.in/calories-nutrition/generic/spring-onions?portionid=59182&portionamount=100.000",
+                "reasoning": "The most consistent and reliable data across multiple sources was for a 100g serving size. The nutritional values for 100g were clearly provided in the source from FatSecret, which listed 32 calories, 1.83g protein, 0.19g fat, and 7.34g carbohydrates. This source was chosen as it provided a complete and clear breakdown for the standard 100g serving size."
+              }
+            },
+            {
+              "segment_id": 1,
+              "food_name": "Glazed Grilled Chicken in Sauce",
+              "total_mass_grams": 264.95,
+              "calculated_nutrition": {
+                "calories_kcal": 391.91,
+                "protein_g": 63.62,
+                "fat_g": 8.97,
+                "carbohydrates_g": 0.0
+              },
+              "source_data": {
+                "found": true,
+                "serving_size_grams": 192,
+                "calories_kcal": 284,
+                "protein_g": 46.1,
+                "fat_g": 6.5,
+                "carbohydrates_g": 0,
+                "source_url": "https://www.nutritionix.com/food/grilled-chicken",
+                "reasoning": "The serving size of 192g was identified from the Nutritionix source, which provided detailed nutritional information for a piece of grilled chicken weighing 192g. This source was chosen as it provided a complete set of nutritional data for this specific serving size, including calories, protein, fat, and carbohydrates."
+              }
+            },
+            {
+              "segment_id": 2,
+              "food_name": "Shredded Purple Cabbage",
+              "total_mass_grams": 521.66,
+              "calculated_nutrition": {
+                "calories_kcal": 162.29,
+                "protein_g": 5.8,
+                "fat_g": 0.0,
+                "carbohydrates_g": 40.57
+              },
+              "source_data": {
+                "found": true,
+                "serving_size_grams": 90,
+                "calories_kcal": 28,
+                "protein_g": 1,
+                "fat_g": 0,
+                "carbohydrates_g": 7,
+                "source_url": "https://fitia.app/calories-nutritional-information/slug-52488/",
+                "reasoning": "The serving size of 1 cup is specified as 90 grams in the source from Fitia. This source provides consistent nutritional values for this serving size, which are 28 calories, 1 gram of protein, 0 grams of fat, and 7 grams of carbohydrates."
+              }
+            },
+            {
+              "segment_id": 3,
+              "food_name": "shredded purple/red cabbage (slaw)",
+              "total_mass_grams": 100.3,
+              "calculated_nutrition": {
+                "calories_kcal": 31.09,
+                "protein_g": 1.43,
+                "fat_g": 0.16,
+                "carbohydrates_g": 7.39
+              },
+              "source_data": {
+                "found": true,
+                "serving_size_grams": 100,
+                "calories_kcal": 31,
+                "protein_g": 1.43,
+                "fat_g": 0.16,
+                "carbohydrates_g": 7.37,
+                "source_url": "https://foods.fatsecret.com/calories-nutrition/usda/red-cabbage?portionid=59041&portionamount=100.000",
+                "reasoning": "The serving size of 100 grams was explicitly mentioned in multiple sources, providing consistent nutritional information for raw red cabbage. The values for calories, protein, fat, and carbohydrates were directly extracted from the source, which provided a clear breakdown for this serving size."
+              }
+            }
+          ],
+          "total_nutrition_summary": {
+            "total_calories_kcal": 609.3,
+            "total_protein_g": 72.22,
+            "total_fat_g": 9.27,
+            "total_carbohydrates_g": 53.47
+          }
+        },
+        "saved_to": "./session_001/calorie_outputs/calc_20251012_200318.json"
+      }
+    }
+  ]
+}

@@ -11,6 +11,7 @@ Usage:
 import sys
 import subprocess
 import time
+import os
 
 
 # In calai.py / run_simple_pipeline.py
@@ -22,6 +23,8 @@ def main():
         sys.exit(1)
 
     image_path = sys.argv[1]
+    session_folder = sys.argv[2] if len(sys.argv) > 2 else None
+
 
     # --- Define Hardcoded Filenames as used by the agents ---
     confirmed_food_file = "final_confirmed_output.json"
@@ -37,7 +40,7 @@ def main():
         ["python", "agent1_decomposer.py", confirmed_food_file],
         ["python", "agent2_masscalculator.py", density_pdf_file, agent1_output_file],
         # Agent 3 now uses its own hardcoded output name, so we don't pass it
-        ["python", "agent3_nutritioncalculator.py", agent2_output_file]
+        ["python", "agent3_nutritioncalculator.py", agent2_output_file] + ([session_folder] if session_folder else [])
     ]
 
     print("🚀 Starting Barebones Pipeline Execution...")

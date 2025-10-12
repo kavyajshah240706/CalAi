@@ -1,13 +1,6 @@
 """
-Conversational VLM Agent
-Multimodal conversational AI that can:
-- Answer general food questions
-- Analyze food images
-- Access conversation history
-- Access past calorie calculations
-- Provide recommendations and comparisons
-
-Usage: python conversational_vlm.py "user query" [image_path] --session <session_folder>
+Conversational VLM Agent (FIXED)
+Now correctly extracts calorie calculation context
 """
 
 import os
@@ -31,9 +24,14 @@ class ConversationalVLM:
     def load_conversation_history(self):
         """Load conversation history from session"""
         if os.path.exists(self.conversation_file):
-            with open(self.conversation_file, 'r') as f:
+            with open(self.conversation_file, 'r', encoding='utf-8') as f:
                 return json.load(f)
         return {"messages": []}
+    
+    def save_conversation_history(self, conversation_history):
+        """Save updated conversation history back to file"""
+        with open(self.conversation_file, 'w', encoding='utf-8') as f:
+            json.dump(conversation_history, f, indent=2, ensure_ascii=False)
     
     def load_calorie_calculations(self):
         """Load all calorie calculation outputs from session"""
@@ -42,18 +40,19 @@ class ConversationalVLM:
         if not os.path.exists(self.calorie_outputs_folder):
             return calculations
         
-        for filename in os.listdir(self.calorie_outputs_folder):
-            if filename.endswith('.json'):
-                filepath = os.path.join(self.calorie_outputs_folder, filename)
-                try:
-                    with open(filepath, 'r') as f:
-                        data = json.load(f)
-                        calculations.append({
-                            "file": filename,
-                            "data": data
-                        })
-                except:
-                    continue
+        files = [f for f in os.listdir(self.calorie_outputs_folder) if f.endswith('.json')]
+        
+        for filename in files:
+            filepath = os.path.join(self.calorie_outputs_folder, filename)
+            try:
+                with open(filepath, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    calculations.append({
+                        "file": filename,
+                        "data": data
+                    })
+            except Exception as e:
+                continue
         
         return calculations
     
@@ -75,41 +74,63 @@ class ConversationalVLM:
                 role = msg.get('role', 'unknown')
                 content = msg.get('content', '')
                 timestamp = msg.get('timestamp', '')
-                conv_summary += f"{role.upper()} [{timestamp}]: {content[:200]}\n"
+                content_preview = content[:300] + "..." if len(content) > 300 else content
+                conv_summary += f"{role.upper()} [{timestamp}]: {content_preview}\n"
             context_parts.append(conv_summary)
         
-        # Available calorie calculations
+        # FIXED: Better extraction of calorie calculations
         if calorie_calculations:
-            calc_summary = "\nAVAILABLE CALORIE CALCULATIONS:\n"
+            calc_summary = "\n=== AVAILABLE CALORIE CALCULATIONS ===\n"
+            
             for idx, calc in enumerate(calorie_calculations, 1):
                 data = calc.get('data', {})
+                filename = calc.get('file', 'Unknown')
                 
-                # Try to extract key info from different output formats
-                food_name = "Unknown Food"
-                calories = "N/A"
-                protein = "N/A"
+                calc_summary += f"\n📊 CALCULATION {idx} (from {filename}):\n"
                 
-                # Handle different JSON structures
-                if 'food_masses' in data:  # Agent 2 output
+                # Handle Agent 3 output structure (nutritional_breakdown_per_segment)
+                if 'nutritional_breakdown_per_segment' in data:
+                    segments = data.get('nutritional_breakdown_per_segment', [])
+                    total_summary = data.get('total_nutrition_summary', {})
+                    
+                    # Show each food item
+                    for seg in segments:
+                        food_name = seg.get('food_name', 'Unknown')
+                        mass = seg.get('total_mass_grams', 0)
+                        nutr = seg.get('calculated_nutrition', {})
+                        
+                        calc_summary += f"  • {food_name} ({mass}g)\n"
+                        calc_summary += f"    - Calories: {nutr.get('calories_kcal', 0):.1f} kcal\n"
+                        calc_summary += f"    - Protein: {nutr.get('protein_g', 0):.1f}g\n"
+                        calc_summary += f"    - Carbs: {nutr.get('carbohydrates_g', 0):.1f}g\n"
+                        calc_summary += f"    - Fat: {nutr.get('fat_g', 0):.1f}g\n"
+                    
+                    # Show totals
+                    if total_summary:
+                        calc_summary += f"\n  TOTAL MEAL:\n"
+                        calc_summary += f"    - Total Calories: {total_summary.get('total_calories_kcal', 0):.1f} kcal\n"
+                        calc_summary += f"    - Total Protein: {total_summary.get('total_protein_g', 0):.1f}g\n"
+                        calc_summary += f"    - Total Carbs: {total_summary.get('total_carbohydrates_g', 0):.1f}g\n"
+                        calc_summary += f"    - Total Fat: {total_summary.get('total_fat_g', 0):.1f}g\n"
+                
+                # Handle old format (food_masses from Agent 2)
+                elif 'food_masses' in data:
                     for food in data.get('food_masses', []):
                         food_name = food.get('food_name', 'Unknown')
-                        mass = food.get('total_mass_grams', 'N/A')
-                        calc_summary += f"\n{idx}. {food_name} - Mass: {mass}g\n"
+                        mass = food.get('total_mass_grams', 0)
+                        calc_summary += f"  • {food_name}: {mass}g\n"
                 
-                elif 'food_name' in data:  # Agent 3 output
-                    food_name = data.get('food_name', 'Unknown')
-                    calories = data.get('nutritional_information', {}).get('calories_kcal', 'N/A')
-                    protein = data.get('nutritional_information', {}).get('protein_g', 'N/A')
-                    calc_summary += f"\n{idx}. {food_name}\n"
-                    calc_summary += f"   Calories: {calories} kcal\n"
-                    calc_summary += f"   Protein: {protein}g\n"
-                
+                # Generic fallback
                 else:
-                    calc_summary += f"\n{idx}. Calculation available (see full data)\n"
+                    calc_summary += f"  • Calculation data available (check file for details)\n"
+                
+                calc_summary += "\n"
             
             context_parts.append(calc_summary)
         
-        return "\n\n".join(context_parts) if context_parts else "No previous context available."
+        final_context = "\n\n".join(context_parts) if context_parts else "No previous context available."
+        
+        return final_context
     
     def create_system_prompt(self, context_summary):
         """Create system prompt with context"""
@@ -126,13 +147,15 @@ CONTEXT AVAILABLE TO YOU:
 {context_summary}
 
 INSTRUCTIONS:
-1. If user asks about past meals/calculations, use the available calorie calculation data
-2. If user asks comparisons, reference specific calculations from context
-3. If user asks general questions, use your knowledge
-4. Be conversational and helpful
+1. When user asks about "my meal", "the food I ate", "what I calculated" - refer to the calorie calculations above
+2. You have access to DETAILED nutritional breakdowns - use them!
+3. If comparing foods, use the exact values from calculations
+4. Be specific with numbers when you have them
 5. If you see an image, describe it and answer accordingly
 6. Always be accurate with nutritional information
 7. If you don't have specific data, say so clearly
+
+IMPORTANT: The calorie calculations contain exact values for calories, protein, carbs, and fat. Use these precise numbers in your responses!
 
 Respond naturally and conversationally."""
     
@@ -167,7 +190,7 @@ Respond naturally and conversationally."""
         response = self.client.chat.completions.create(
             model="gpt-4o",
             messages=messages,
-            max_tokens=1000,
+            max_tokens=1500,
             temperature=0.7
         )
         
@@ -190,7 +213,7 @@ Respond naturally and conversationally."""
         response = self.client.chat.completions.create(
             model="gpt-4o",
             messages=messages,
-            max_tokens=1000,
+            max_tokens=1500,
             temperature=0.7
         )
         
@@ -211,6 +234,23 @@ Respond naturally and conversationally."""
             response = self.chat_with_image(user_query, image_path, context_summary)
         else:
             response = self.chat_text_only(user_query, context_summary)
+        
+        # Save this interaction to conversation history
+        conversation_history['messages'].append({
+            "role": "user",
+            "content": user_query,
+            "timestamp": datetime.now().isoformat(),
+            "had_image": bool(image_path)
+        })
+        
+        conversation_history['messages'].append({
+            "role": "assistant",
+            "content": response,
+            "timestamp": datetime.now().isoformat(),
+            "agent": "CONVERSATIONAL_VLM"
+        })
+        
+        self.save_conversation_history(conversation_history)
         
         return response
 
@@ -247,7 +287,7 @@ def main():
         sys.exit(1)
     
     if not os.path.exists(session_folder):
-        print(f"⚠️  Warning: Session folder doesn't exist, creating: {session_folder}")
+        print(f"⚠️ Warning: Session folder doesn't exist, creating: {session_folder}")
         os.makedirs(session_folder, exist_ok=True)
     
     # Initialize VLM
@@ -262,6 +302,8 @@ def main():
         
     except Exception as e:
         print(f"❌ Error: {e}", file=sys.stderr)
+        import traceback
+        traceback.print_exc()
         sys.exit(1)
 
 

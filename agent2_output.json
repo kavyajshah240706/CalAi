@@ -1,0 +1,97 @@
+{
+  "agent": "Agent 2: Mass & Density Analyst",
+  "food_masses": [
+    {
+      "food_name": "Chopped Fresh Spring Onion",
+      "segment_id": 0,
+      "is_basic_ingredient": true,
+      "total_mass_grams": 75.02,
+      "ingredient_masses": [
+        {
+          "ingredient_name": "Chopped Fresh Spring Onion",
+          "volume_litres": 0.17049724579620898,
+          "density_kg_per_L": 0.44,
+          "mass_grams": 75.02,
+          "method": "PDF_RAG",
+          "details": {
+            "source": "PDF database"
+          }
+        }
+      ]
+    },
+    {
+      "food_name": "Glazed Grilled Chicken in Sauce",
+      "segment_id": 1,
+      "is_basic_ingredient": false,
+      "total_mass_grams": 264.95,
+      "ingredient_masses": [
+        {
+          "ingredient_name": "Chicken (grilled, moisture reduced)",
+          "volume_litres": 0.15082261510181547,
+          "density_kg_per_L": 0.98,
+          "mass_grams": 147.81,
+          "method": "WEB_SEARCH",
+          "details": {
+            "source": "Web search"
+          }
+        },
+        {
+          "ingredient_name": "Glaze (honey, soy sauce, garlic, ginger, chili paste)",
+          "volume_litres": 0.08797985880939237,
+          "density_kg_per_L": 1.2,
+          "mass_grams": 105.58,
+          "method": "WEB_SEARCH",
+          "details": {
+            "source": "Web search"
+          }
+        },
+        {
+          "ingredient_name": "Absorbed oil and seasonings",
+          "volume_litres": 0.012568551258484623,
+          "density_kg_per_L": 0.92,
+          "mass_grams": 11.56,
+          "method": "WEB_SEARCH",
+          "details": {
+            "source": "Web search"
+          }
+        }
+      ]
+    },
+    {
+      "food_name": "Shredded Purple Cabbage",
+      "segment_id": 2,
+      "is_basic_ingredient": true,
+      "total_mass_grams": 521.66,
+      "ingredient_masses": [
+        {
+          "ingredient_name": "Shredded Purple Cabbage",
+          "volume_litres": 1.7388658144054767,
+          "density_kg_per_L": 0.3,
+          "mass_grams": 521.66,
+          "method": "WEB_SEARCH",
+          "details": {
+            "source": "Web search"
+          }
+        }
+      ]
+    },
+    {
+      "food_name": "shredded purple/red cabbage (slaw)",
+      "segment_id": 3,
+      "is_basic_ingredient": true,
+      "total_mass_grams": 100.3,
+      "ingredient_masses": [
+        {
+          "ingredient_name": "shredded purple/red cabbage (slaw)",
+          "volume_litres": 0.6686968724027117,
+          "density_kg_per_L": 0.15,
+          "mass_grams": 100.3,
+          "method": "WEB_SEARCH",
+          "details": {
+            "source": "Web search"
+          }
+        }
+      ]
+    }
+  ]
+}

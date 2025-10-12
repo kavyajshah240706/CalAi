@@ -1,0 +1,86 @@
+{
+  "agent": "Agent 1: Culinary Decomposer",
+  "decomposed_foods": [
+    {
+      "original_food_name": "Chopped Fresh Spring Onion",
+      "total_volume_litres": 0.17049724579620898,
+      "is_basic_ingredient": true,
+      "reasoning": "Chopped Fresh Spring Onion consists of more than 90% spring onion, making it a simple food item.",
+      "ingredient_volumes": [
+        {
+          "ingredient_name": "Chopped Fresh Spring Onion",
+          "percentage": 100,
+          "volume_litres": 0.17049724579620898,
+          "notes": "Simple ingredient"
+        }
+      ],
+      "sources": [],
+      "segment_id": 0
+    },
+    {
+      "original_food_name": "Glazed Grilled Chicken in Sauce",
+      "total_volume_litres": 0.25137102516969245,
+      "reasoning": "The chicken is marinated in a glaze made from honey, soy sauce, garlic, ginger, and chili paste. During grilling, the chicken loses some moisture, and the glaze thickens and adheres to the chicken, forming a flavorful coating. The final cooked product consists of the chicken with a reduced moisture content and a concentrated glaze that forms the sauce.",
+      "ingredient_volumes": [
+        {
+          "ingredient_name": "Chicken (grilled, moisture reduced)",
+          "percentage": 60,
+          "volume_litres": 0.15082261510181547,
+          "notes": "Main protein component; loses some moisture during grilling"
+        },
+        {
+          "ingredient_name": "Glaze (honey, soy sauce, garlic, ginger, chili paste)",
+          "percentage": 35,
+          "volume_litres": 0.08797985880939237,
+          "notes": "Thickens and adheres to chicken during grilling, forming a flavorful coating"
+        },
+        {
+          "ingredient_name": "Absorbed oil and seasonings",
+          "percentage": 5,
+          "volume_litres": 0.012568551258484623,
+          "notes": "Oil and seasonings absorbed during marination and grilling"
+        }
+      ],
+      "modifications_applied": "User clarifications confirmed the use of chicken and grilling method, which influenced the analysis of moisture loss and glaze adherence.",
+      "is_basic_ingredient": false,
+      "sources": [
+        "https://kitchenconfidante.com/oyster-sauce-glazed-grilled-chicken-recipe",
+        "https://www.101cookingfortwo.com/honey-crusted-grilled-skinless-boneless-chicken-breast/",
+        "https://www.createdby-diane.com/brown-sugar-soy-glazed-chicken/"
+      ],
+      "segment_id": 1
+    },
+    {
+      "original_food_name": "Shredded Purple Cabbage",
+      "total_volume_litres": 1.7388658144054767,
+      "is_basic_ingredient": true,
+      "reasoning": "Shredded Purple Cabbage is composed of more than 90% purple cabbage, making it a simple food item.",
+      "ingredient_volumes": [
+        {
+          "ingredient_name": "Shredded Purple Cabbage",
+          "percentage": 100,
+          "volume_litres": 1.7388658144054767,
+          "notes": "Simple ingredient"
+        }
+      ],
+      "sources": [],
+      "segment_id": 2
+    },
+    {
+      "original_food_name": "shredded purple/red cabbage (slaw)",
+      "total_volume_litres": 0.6686968724027117,
+      "is_basic_ingredient": true,
+      "reasoning": "Shredded purple/red cabbage (slaw) consists of more than 90% cabbage, making it a simple food item.",
+      "ingredient_volumes": [
+        {
+          "ingredient_name": "shredded purple/red cabbage (slaw)",
+          "percentage": 100,
+          "volume_litres": 0.6686968724027117,
+          "notes": "Simple ingredient"
+        }
+      ],
+      "sources": [],
+      "segment_id": 3
+    }
+  ]
+}

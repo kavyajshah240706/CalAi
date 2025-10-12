@@ -269,13 +269,45 @@ NOW ANALYZE "{food_name}":"""
             data = json.load(f)
         
         results = []
-        items = data.get('confirmed_results', [])
+        
+        # Handle both verified_volumes.json and final_confirmed_output.json formats
+        if 'verified_volumes' in data:
+            # New format from volume_verify.py
+            print("✓ Detected verified_volumes.json format")
+            verified_items = data.get('verified_volumes', [])
+            items = []
+            for item in verified_items:
+                items.append({
+                    'segment_id': item.get('segment_id'),
+                    'final_food_name': item.get('food_name'),
+                    'volume_litres': item.get('suggested_volume_litres'),  # Use VERIFIED volume!
+                    'clarifications': {},
+                    'volume_adjusted': item.get('adjustment_made', False),
+                    'original_volume': item.get('original_volume_litres'),
+                    'verification_confidence': item.get('confidence', 0.0),
+                    'verification_reasoning': item.get('reasoning', '')
+                })
+        elif 'confirmed_results' in data:
+            # Old format (fallback compatibility)
+            print("✓ Detected final_confirmed_output.json format")
+            items = data.get('confirmed_results', [])
+        else:
+            print("❌ Error: Unrecognized input format")
+            return []
         
         print(f"\n🍽️  Processing {len(items)} items...\n")
         
         for idx, item in enumerate(items):
             print(f"\n{'='*70}")
             print(f"Item {idx + 1}/{len(items)}: {item['final_food_name']}")
+            
+            # Show if volume was adjusted
+            if item.get('volume_adjusted'):
+                print(f"⚠️  Volume ADJUSTED: {item.get('original_volume', 0):.3f}L → {item['volume_litres']:.3f}L")
+                print(f"   Reason: {item.get('verification_reasoning', 'N/A')}")
+            else:
+                print(f"✓ Volume VERIFIED: {item['volume_litres']:.3f}L")
+            
             print(f"{'='*70}")
             
             result = self.decompose_food(
@@ -286,6 +318,17 @@ NOW ANALYZE "{food_name}":"""
             
             if result:
                 result['segment_id'] = item['segment_id']
+                
+                # Add volume verification metadata
+                if item.get('volume_adjusted'):
+                    result['volume_verification'] = {
+                        'was_adjusted': True,
+                        'original_volume': item.get('original_volume'),
+                        'adjusted_volume': item['volume_litres'],
+                        'confidence': item.get('verification_confidence'),
+                        'reasoning': item.get('verification_reasoning')
+                    }
+                
                 results.append(result)
                 print(f"✅ Complete!\n")
             else:

@@ -12,6 +12,7 @@ import json
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from tavily import TavilyClient
+from datetime import datetime
 
 load_dotenv()
 
@@ -195,35 +196,51 @@ If no reliable data can be found, return {{"found": false}}.
             
         return total_nutrition
 
-    def save_output(self, segments, totals, output_path):
+    def save_output(self, segments, totals, output_path, session_folder=None):
         """Saves the final results to a JSON file."""
+        
         output = {
             "agent": "Agent 3: Nutritional Profiler",
             "nutritional_breakdown_per_segment": segments,
             "total_nutrition_summary": totals
         }
+        
+        # ALWAYS save to root (backward compatibility)
         with open(output_path, 'w') as f:
             json.dump(output, f, indent=2)
         print(f"\n💾 Saved final nutritional analysis to: {output_path}")
+        
+        # ALSO save to session folder if provided
+        if session_folder:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            session_path = f"{session_folder}/calorie_outputs/calc_{timestamp}.json"
+            os.makedirs(f"{session_folder}/calorie_outputs", exist_ok=True)
+            
+            with open(session_path, 'w') as f:
+                json.dump(output, f, indent=2)
+            print(f"💾 ALSO saved to session: {session_path}")
 
 def main():
     import sys
     if len(sys.argv) < 2:
-        print("Usage: python agent3_nutrition_profiler.py <agent2_output.json>")
+        print("Usage: python agent3_nutritioncalculator.py <agent2_output.json> [session_folder]")
         sys.exit(1)
 
     agent2_output_file = sys.argv[1]
+    session_folder = sys.argv[2] if len(sys.argv) > 2 else None
+
     output_file = "agent3_output.json"
 
     agent = NutritionProfiler()
     processed_results = agent.process_agent2_output(agent2_output_file)
     total_summary = agent.calculate_totals(processed_results)
-    agent.save_output(processed_results, total_summary, output_file)
+    agent.save_output(processed_results, total_summary, output_file, session_folder=session_folder)
 
     print(f"\n{'='*70}")
     print("✅ Agent 3 Complete! Final nutritional analysis is ready.")
     print(f"Total Summary: {total_summary}")
     print(f"{'='*70}")
+
 
 if __name__ == "__main__":
     main()

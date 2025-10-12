@@ -1,0 +1,49 @@
+{
+  "verified_volumes": [
+    {
+      "segment_id": 0,
+      "food_name": "Chopped Green Onions",
+      "original_volume_litres": 0.17049724579620898,
+      "volume_reasonable": true,
+      "suggested_volume_litres": 0.17,
+      "confidence": 0.8,
+      "reasoning": "The portion of green onions appears small, consistent with the estimate.",
+      "adjustment_made": false
+    },
+    {
+      "segment_id": 1,
+      "food_name": "Chicken in Sauce",
+      "original_volume_litres": 0.25137102516969245,
+      "volume_reasonable": true,
+      "suggested_volume_litres": 0.25,
+      "confidence": 0.85,
+      "reasoning": "The chicken portion with sauce seems to match the estimated volume.",
+      "adjustment_made": false
+    },
+    {
+      "segment_id": 2,
+      "food_name": "Cooked White Rice",
+      "original_volume_litres": 1.7388658144054767,
+      "volume_reasonable": false,
+      "suggested_volume_litres": 0.8,
+      "confidence": 0.75,
+      "reasoning": "The rice portion looks large but not over 1.7L; closer to 0.8L.",
+      "adjustment_made": true
+    },
+    {
+      "segment_id": 3,
+      "food_name": "Shredded Purple (Red) Cabbage / Coleslaw",
+      "original_volume_litres": 0.6686968724027117,
+      "volume_reasonable": true,
+      "suggested_volume_litres": 0.67,
+      "confidence": 0.8,
+      "reasoning": "The cabbage portion seems consistent with the estimated volume.",
+      "adjustment_made": false
+    }
+  ],
+  "overall_confidence": 0.8,
+  "notes": "The rice volume was adjusted as it appeared overestimated compared to the visual size on the plate.",
+  "input_file": "final_confirmed_output.json",
+  "image_file": "C:\\Users\\Kavya Shah\\Downloads\\food_volume_estimation\\Screenshot 2025-10-12 135136.png",
+  "total_items": 4
+}

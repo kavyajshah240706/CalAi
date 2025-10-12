@@ -154,7 +154,7 @@ OUTPUT (JSON only):
 
             # 2. Build the command. It no longer needs the output path argument.
             #    NOTE: Replace "calai.py" with your actual pipeline script name.
-            command = ["python", "calai.py", image_path]
+            command = ["python", "calai.py", image_path, self.session_folder]
 
             # 3. Run the subprocess interactively (no output capture).
             result = subprocess.run(
