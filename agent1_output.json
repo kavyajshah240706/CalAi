@@ -2,84 +2,103 @@
   "agent": "Agent 1: Culinary Decomposer",
   "decomposed_foods": [
     {
-      "original_food_name": "Chopped Fresh Spring Onion",
-      "total_volume_litres": 0.17049724579620898,
+      "original_food_name": "Chopped Fresh Spring Onions (Scallions)",
+      "total_volume_litres": 0.05,
       "is_basic_ingredient": true,
-      "reasoning": "Chopped Fresh Spring Onion consists of more than 90% spring onion, making it a simple food item.",
+      "reasoning": "Chopped Fresh Spring Onions (Scallions) consist of more than 90% spring onions, making it a simple food item.",
       "ingredient_volumes": [
         {
-          "ingredient_name": "Chopped Fresh Spring Onion",
+          "ingredient_name": "Chopped Fresh Spring Onions (Scallions)",
           "percentage": 100,
-          "volume_litres": 0.17049724579620898,
+          "volume_litres": 0.05,
           "notes": "Simple ingredient"
         }
       ],
       "sources": [],
-      "segment_id": 0
+      "segment_id": 0,
+      "volume_verification": {
+        "was_adjusted": true,
+        "original_volume": 0.17117568862636592,
+        "adjusted_volume": 0.05,
+        "confidence": 0.8,
+        "reasoning": "The portion of scallions appears small, likely less than 0.171L."
+      }
     },
     {
-      "original_food_name": "Glazed Grilled Chicken in Sauce",
-      "total_volume_litres": 0.25137102516969245,
-      "reasoning": "The chicken is marinated in a glaze made from honey, soy sauce, garlic, ginger, and chili paste. During grilling, the chicken loses some moisture, and the glaze thickens and adheres to the chicken, forming a flavorful coating. The final cooked product consists of the chicken with a reduced moisture content and a concentrated glaze that forms the sauce.",
+      "original_food_name": "Grilled Chicken in Brown Sauce",
+      "total_volume_litres": 0.261692089137911,
+      "reasoning": "The dish involves browning chicken pieces and then simmering them in a sauce made from soy sauce, brown sugar, garlic, and chicken broth. Cornstarch is used to thicken the sauce. During cooking, the chicken absorbs some of the sauce, and the sauce itself reduces slightly as it thickens. The final product is a combination of cooked chicken pieces and a thickened sauce.",
       "ingredient_volumes": [
         {
-          "ingredient_name": "Chicken (grilled, moisture reduced)",
+          "ingredient_name": "Chicken (cooked, sauce absorbed)",
           "percentage": 60,
-          "volume_litres": 0.15082261510181547,
-          "notes": "Main protein component; loses some moisture during grilling"
+          "volume_litres": 0.1570152534827466,
+          "notes": "Chicken forms the main bulk of the dish, absorbing some of the sauce during cooking."
         },
         {
-          "ingredient_name": "Glaze (honey, soy sauce, garlic, ginger, chili paste)",
-          "percentage": 35,
-          "volume_litres": 0.08797985880939237,
-          "notes": "Thickens and adheres to chicken during grilling, forming a flavorful coating"
-        },
-        {
-          "ingredient_name": "Absorbed oil and seasonings",
-          "percentage": 5,
-          "volume_litres": 0.012568551258484623,
-          "notes": "Oil and seasonings absorbed during marination and grilling"
+          "ingredient_name": "Thickened sauce (soy sauce, broth, sugar)",
+          "percentage": 40,
+          "volume_litres": 0.1046768356551644,
+          "notes": "The sauce is thickened with cornstarch and reduced slightly during cooking, coating the chicken."
         }
       ],
-      "modifications_applied": "User clarifications confirmed the use of chicken and grilling method, which influenced the analysis of moisture loss and glaze adherence.",
+      "modifications_applied": "The analysis considered the typical absorption of sauce by the chicken and the reduction of the sauce volume due to thickening and evaporation.",
       "is_basic_ingredient": false,
       "sources": [
-        "https://kitchenconfidante.com/oyster-sauce-glazed-grilled-chicken-recipe",
-        "https://www.101cookingfortwo.com/honey-crusted-grilled-skinless-boneless-chicken-breast/",
-        "https://www.createdby-diane.com/brown-sugar-soy-glazed-chicken/"
+        "https://www.momof6.com/food-kids-will-eat/chicken-in-brown-sauce/",
+        "https://www.food.com/recipe/chinese-brown-sauce-chicken-58347",
+        "https://12tomatoes.com/brown-sauce-chicken/"
       ],
       "segment_id": 1
     },
     {
-      "original_food_name": "Shredded Purple Cabbage",
-      "total_volume_litres": 1.7388658144054767,
+      "original_food_name": "Cooked White Rice",
+      "total_volume_litres": 0.8,
       "is_basic_ingredient": true,
-      "reasoning": "Shredded Purple Cabbage is composed of more than 90% purple cabbage, making it a simple food item.",
+      "reasoning": "Cooked white rice is primarily composed of rice, with water being the only other significant component. Since the rice itself constitutes more than 90% of the final product, it is considered a simple food.",
       "ingredient_volumes": [
         {
-          "ingredient_name": "Shredded Purple Cabbage",
+          "ingredient_name": "Cooked White Rice",
           "percentage": 100,
-          "volume_litres": 1.7388658144054767,
+          "volume_litres": 0.8,
           "notes": "Simple ingredient"
         }
       ],
       "sources": [],
-      "segment_id": 2
+      "segment_id": 2,
+      "volume_verification": {
+        "was_adjusted": true,
+        "original_volume": 1.8085901133370705,
+        "adjusted_volume": 0.8,
+        "confidence": 0.9,
+        "reasoning": "The rice portion seems large, but 1.8L is excessive. Closer to 0.8L."
+      }
     },
     {
-      "original_food_name": "shredded purple/red cabbage (slaw)",
-      "total_volume_litres": 0.6686968724027117,
-      "is_basic_ingredient": true,
-      "reasoning": "Shredded purple/red cabbage (slaw) consists of more than 90% cabbage, making it a simple food item.",
+      "original_food_name": "Shredded Red/Purple Cabbage (Coleslaw/Pickled Cabbage)",
+      "total_volume_litres": 0.6647587130581186,
+      "reasoning": "The dish is a combination of coleslaw and pickled cabbage. Coleslaw involves mixing shredded cabbage and carrots with a mayonnaise-based dressing, while pickled cabbage involves soaking shredded cabbage in a vinegar-based brine. In both cases, the cabbage is the primary ingredient, with the dressing or brine adding flavor and moisture. The cabbage retains its volume as it is not cooked, but the dressing or brine adds to the overall volume. The proportions are based on typical recipes where cabbage is the main component, with the dressing or brine contributing significantly to the final volume.",
       "ingredient_volumes": [
         {
-          "ingredient_name": "shredded purple/red cabbage (slaw)",
-          "percentage": 100,
-          "volume_litres": 0.6686968724027117,
-          "notes": "Simple ingredient"
+          "ingredient_name": "Shredded cabbage (coleslaw/pickled)",
+          "percentage": 70,
+          "volume_litres": 0.465331099140683,
+          "notes": "Main ingredient, retains structure and volume in both coleslaw and pickled forms"
+        },
+        {
+          "ingredient_name": "Dressing/Brine (mayonnaise, vinegar, sugar, salt)",
+          "percentage": 30,
+          "volume_litres": 0.19942761391743558,
+          "notes": "Adds flavor and moisture, includes mayonnaise for coleslaw and vinegar brine for pickled cabbage"
         }
       ],
-      "sources": [],
+      "modifications_applied": "The analysis considered both coleslaw and pickled cabbage recipes, focusing on the common ingredient (cabbage) and the role of dressing or brine in the final product.",
+      "is_basic_ingredient": false,
+      "sources": [
+        "https://sugarspunrun.com/easy-coleslaw-recipe/",
+        "https://www.thekitchn.com/best-coleslaw-recipe-23666905",
+        "https://itsavegworldafterall.com/pickled-red-cabbage/"
+      ],
       "segment_id": 3
     }
   ]

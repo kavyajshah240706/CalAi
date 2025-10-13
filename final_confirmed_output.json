@@ -2,53 +2,47 @@
   "confirmed_results": [
     {
       "segment_id": 0,
-      "final_food_name": "Chopped Fresh Spring Onion",
-      "volume_litres": 0.17049724579620898,
-      "original_vlm_identification": "chopped fresh herbs (likely cilantro)",
+      "final_food_name": "Chopped Fresh Spring Onions (Scallions)",
+      "volume_litres": 0.17117568862636592,
       "clarifications": {
-        "herb_type": "spring onion",
-        "volume": "0.170 litres"
+        "herb_type": "spring onions",
+        "volume": "0.171 litres"
       },
-      "user_response": "spring onion",
+      "user_response": "spring onions not cilantro",
       "questions_asked": [
-        "Is this a bowl of fresh chopped herbs (e.g., cilantro/parsley) or is it a prepared sauce/chutney/dressing (e.g., pesto, chutney, guacamole)?"
+        "Is this chopped fresh herb (like cilantro/parsley) or a prepared green chutney/sauce?"
       ]
     },
     {
       "segment_id": 1,
-      "final_food_name": "Glazed Grilled Chicken in Sauce",
-      "volume_litres": 0.25137102516969245,
-      "original_vlm_identification": "glazed chicken (piece in sauce)",
+      "final_food_name": "Grilled Chicken in Brown Sauce",
+      "volume_litres": 0.261692089137911,
       "clarifications": {
-        "volume": "0.251 litres",
-        "cooking_method": "grilled",
-        "protein_type": "chicken"
+        "protein_type": "chicken",
+        "sauce_type": "brown sauce",
+        "cooking_method": "grilled"
       },
       "user_response": "chicken",
       "questions_asked": [
-        "Is this item chicken (meat) or a vegetarian alternative such as paneer or tofu?"
+        "Is this item chicken (meat) or a vegetarian protein like paneer or tofu?"
       ]
     },
     {
       "segment_id": 2,
-      "final_food_name": "Shredded Purple Cabbage",
-      "volume_litres": 1.7388658144054767,
-      "original_vlm_identification": "cooked white rice",
+      "final_food_name": "cooked white rice",
+      "volume_litres": 1.8085901133370705,
       "clarifications": {},
-      "user_response": "shredded purple cabbage",
-      "questions_asked": [
-        "Is the highlighted item regular cooked/steamed white rice or cauliflower (riced) cauliflower?"
-      ]
+      "user_response": null,
+      "questions_asked": []
     },
     {
       "segment_id": 3,
-      "final_food_name": "shredded purple/red cabbage (slaw)",
-      "volume_litres": 0.6686968724027117,
-      "original_vlm_identification": "shredded purple/red cabbage (slaw)",
+      "final_food_name": "shredded red/purple cabbage (coleslaw/pickled cabbage)",
+      "volume_litres": 0.6647587130581186,
       "clarifications": {},
       "user_response": null,
       "questions_asked": []
     }
   ],
-  "additional_suggestions": "no"
+  "additional_suggestions": "no suggestions"
 }

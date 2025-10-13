@@ -2,8 +2,9 @@ from openai import OpenAI
 import json
 
 class DialogueAgent:
-    def __init__(self, api_key):
+    def __init__(self, api_key, input_callback=None):
         self.client = OpenAI(api_key=api_key)
+        self.input_callback = input_callback 
 
     def confirm_analysis(self, vlm_output: dict) -> dict:
         """Collect all VLM questions → Filter to top 3 → Ask user once → Process all answers"""
@@ -103,7 +104,10 @@ class DialogueAgent:
             seg_id = seg_data['segment_id']
             user_answer = user_answers.get(seg_id, None)
             
-            if user_answer:
+            # Check if a question was actually ASKED for this segment
+            question_was_asked = any(q['segment_id'] == seg_id for q in selected_questions)
+            
+            if user_answer and question_was_asked:
                 # Synthesize with user input
                 final_spec = self._call_synthesizer(
                     seg_data['food_name'],
@@ -113,7 +117,7 @@ class DialogueAgent:
                     seg_data['volume']
                 )
             else:
-                # No user input, use original
+                # No question asked OR no answer - use original VLM name
                 final_spec = {
                     "food_name": seg_data['food_name'],
                     "volume_litres": seg_data['volume'],
@@ -126,7 +130,6 @@ class DialogueAgent:
                 "segment_id": seg_id,
                 "final_food_name": final_spec['food_name'],
                 "volume_litres": final_spec['volume_litres'],
-                "original_vlm_identification": seg_data['food_name'],
                 "clarifications": final_spec.get('clarifications', {}),
                 "user_response": final_spec.get('user_response'),
                 "questions_asked": final_spec.get('questions_asked', [])
@@ -266,22 +269,43 @@ OUTPUT JSON:
             return {}
 
     def _get_user_input(self):
-        """Get multi-line user input"""
-        lines = []
-        empty_count = 0
-        while True:
+        """Get user input via API or terminal"""
+        if self.input_callback:
+            # Use callback
+            print("\n[WAITING_FOR_INPUT]")
+            user_input = self.input_callback()
+            print(f"[INPUT_RECEIVED]: {user_input[:100]}...")
+            return user_input
+        else:
+            # Try API first, fallback to terminal
             try:
-                line = input()
-                if line == "":
-                    empty_count += 1
-                    if empty_count >= 2:
-                        break
-                else:
-                    empty_count = 0
-                    lines.append(line)
+                import requests
+                print("\n[WAITING_FOR_INPUT]")
+                response = requests.get('http://localhost:5001/get-input', timeout=310)
+                if response.status_code == 200:
+                    user_input = response.json().get('input', '')
+                    print(f"[INPUT_RECEIVED]: {user_input[:100]}...")
+                    return user_input
             except:
-                break
-        return "\n".join(lines).strip()
+                pass
+            
+            # Fallback to terminal input
+            print("(Type your answer and press Enter twice):")
+            lines = []
+            empty_count = 0
+            while True:
+                try:
+                    line = input()
+                    if line == "":
+                        empty_count += 1
+                        if empty_count >= 2:
+                            break
+                    else:
+                        empty_count = 0
+                        lines.append(line)
+                except:
+                    break
+            return "\n".join(lines).strip()
 
     def _call_synthesizer(self, vlm_name, uncertainties, questions, user_answer, volume):
         """Synthesize final food name with user clarifications"""

@@ -122,9 +122,7 @@ For Pancakes (after cooking):
 - Flour-based structure: ~45% (main bulk after cooking)
 - Milk (some evaporated): ~30% (liquid content)
 - Eggs (cooked, distributed): ~15% (protein structure)
-- Sugar: ~5% (dissolved throughout)
-- Baking powder: ~3% (created air, trace amount left)
-- Butter: ~2% (fat incorporated)
+
 
 STEP 4: CALCULATE VOLUMES
 Total volume: {volume_litres}L
@@ -141,9 +139,9 @@ CRITICAL RULES:
    - Baked goods: Consider air incorporation
    - Boiled foods: Consider water content
 
-3. Percentages MUST add to 100%
+3. Percentages doesnt necessarily add to 100%
 
-4. Only include ingredients >2% of volume
+4. Only include ingredients >10% of volume
 
 5. Use REALISTIC proportions based on actual recipes
 
@@ -176,8 +174,7 @@ Example 1: Fried Potato
   "reasoning": "Potatoes are sliced and deep fried. Frying causes: (1) Water loss from potato, (2) Oil absorption into potato. Final product is denser than raw potato.",
   "ingredient_volumes": [
     {{"ingredient_name": "Potato (fried, water reduced)", "percentage": 75, "notes": "Main ingredient, water partially evaporated"}},
-    {{"ingredient_name": "Absorbed frying oil", "percentage": 20, "notes": "Oil penetrates potato during frying"}},
-    {{"ingredient_name": "Salt and seasonings", "percentage": 5, "notes": "External coating"}}
+    {{"ingredient_name": "Absorbed frying oil", "percentage": 20, "notes": "Oil penetrates potato during frying"}}
   ]
 }}
 
@@ -204,14 +201,6 @@ NOW ANALYZE "{food_name}":"""
             result = json.loads(json_str)
             result['is_basic_ingredient'] = False
             
-            # Validate percentages
-            total_pct = sum(ing['percentage'] for ing in result['ingredient_volumes'])
-            if abs(total_pct - 100) > 1:
-                print(f"⚠️  Warning: Percentages sum to {total_pct}%, adjusting...")
-                # Normalize percentages
-                for ing in result['ingredient_volumes']:
-                    ing['percentage'] = (ing['percentage'] / total_pct) * 100
-                    ing['volume_litres'] = (ing['percentage'] / 100) * volume_litres
             
             return result
             

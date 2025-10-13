@@ -1,0 +1,95 @@
+{
+  "agent": "Agent 3: Nutritional Profiler",
+  "nutritional_breakdown_per_segment": [
+    {
+      "segment_id": 0,
+      "food_name": "Chopped Fresh Spring Onions (Scallions)",
+      "total_mass_grams": 22.0,
+      "calculated_nutrition": {
+        "calories_kcal": 7.04,
+        "protein_g": 0.4,
+        "fat_g": 0.04,
+        "carbohydrates_g": 1.61
+      },
+      "source_data": {
+        "found": true,
+        "serving_size_grams": 100,
+        "calories_kcal": 32,
+        "protein_g": 1.8,
+        "fat_g": 0.2,
+        "carbohydrates_g": 7.3,
+        "source_url": "https://www.fatsecret.co.in/calories-nutrition/generic/spring-onions?portionid=59182&portionamount=100.000",
+        "reasoning": "The most consistent and detailed nutritional information was found for a 100g serving size across multiple sources. The values for calories, protein, fat, and carbohydrates were consistent in the sources that provided data for a 100g serving. Therefore, I used the 100g serving size as it is a standard reference and the values were corroborated by multiple sources."
+      }
+    },
+    {
+      "segment_id": 1,
+      "food_name": "Grilled Chicken in Brown Sauce",
+      "total_mass_grams": 196.27,
+      "calculated_nutrition": {
+        "calories_kcal": 382.73,
+        "protein_g": 58.0,
+        "fat_g": 15.15,
+        "carbohydrates_g": 0.0
+      },
+      "source_data": {
+        "found": true,
+        "serving_size_grams": 100,
+        "calories_kcal": 195,
+        "protein_g": 29.55,
+        "fat_g": 7.72,
+        "carbohydrates_g": 0,
+        "source_url": "https://foods.fatsecret.com/calories-nutrition/generic/chicken-breast-grilled-ns-as-to-skin-eaten?portionid=52714299&portionamount=100.000",
+        "reasoning": "The serving size of 100 grams was explicitly mentioned in the source, along with the corresponding nutritional values. This source provided a clear breakdown of calories, protein, fat, and carbohydrates for a 100g serving, making it the most reliable and straightforward data to use."
+      }
+    },
+    {
+      "segment_id": 2,
+      "food_name": "Cooked White Rice",
+      "total_mass_grams": 584.0,
+      "calculated_nutrition": {
+        "calories_kcal": 753.36,
+        "protein_g": 15.77,
+        "fat_g": 0.58,
+        "carbohydrates_g": 162.94
+      },
+      "source_data": {
+        "found": true,
+        "serving_size_grams": 100,
+        "calories_kcal": 129,
+        "protein_g": 2.7,
+        "fat_g": 0.1,
+        "carbohydrates_g": 27.9,
+        "source_url": "https://www.eatthismuch.com/calories/white-rice-4806?a=0.5405405405405406%3A0",
+        "reasoning": "The serving size of 100 grams was consistently mentioned across multiple sources. The nutritional values for calories, protein, fat, and carbohydrates were extracted from the source that provided detailed information for cooked white rice, which is the most relevant form for consumption."
+      }
+    },
+    {
+      "segment_id": 3,
+      "food_name": "Shredded Red/Purple Cabbage (Coleslaw/Pickled Cabbage)",
+      "total_mass_grams": 317.55,
+      "calculated_nutrition": {
+        "calories_kcal": 98.44,
+        "protein_g": 4.54,
+        "fat_g": 0.51,
+        "carbohydrates_g": 23.4
+      },
+      "source_data": {
+        "found": true,
+        "serving_size_grams": 100,
+        "calories_kcal": 31,
+        "protein_g": 1.43,
+        "fat_g": 0.16,
+        "carbohydrates_g": 7.37,
+        "source_url": "https://foods.fatsecret.com/calories-nutrition/usda/red-cabbage?portionid=59041&portionamount=100.000",
+        "reasoning": "The serving size of 100 grams was explicitly mentioned in the source from FatSecret, which provided detailed nutritional information for this specific serving size. The values for calories, protein, fat, and carbohydrates were directly extracted from this source, ensuring accuracy and consistency with the specified serving size."
+      }
+    }
+  ],
+  "total_nutrition_summary": {
+    "total_calories_kcal": 1241.57,
+    "total_protein_g": 78.71,
+    "total_fat_g": 16.28,
+    "total_carbohydrates_g": 187.95
+  }
+}

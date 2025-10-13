@@ -4,25 +4,25 @@
     {
       "segment_id": 0,
       "image_filename": "output1_segment0.png",
-      "volume": 0.17049724579620898,
+      "volume": 0.17117568862636592,
       "image_path": "C:\\Users\\Kavya Shah\\Downloads\\food_volume_estimation\\output1_segment0.png"
     },
     {
       "segment_id": 1,
       "image_filename": "output1_segment1.png",
-      "volume": 0.25137102516969245,
+      "volume": 0.261692089137911,
       "image_path": "C:\\Users\\Kavya Shah\\Downloads\\food_volume_estimation\\output1_segment1.png"
     },
     {
       "segment_id": 2,
       "image_filename": "output1_segment2.png",
-      "volume": 1.7388658144054767,
+      "volume": 1.8085901133370705,
       "image_path": "C:\\Users\\Kavya Shah\\Downloads\\food_volume_estimation\\output1_segment2.png"
     },
     {
       "segment_id": 3,
       "image_filename": "output1_segment3.png",
-      "volume": 0.6686968724027117,
+      "volume": 0.6647587130581186,
       "image_path": "C:\\Users\\Kavya Shah\\Downloads\\food_volume_estimation\\output1_segment3.png"
     }
   ]

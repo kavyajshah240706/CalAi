@@ -160,7 +160,7 @@ OUTPUT (JSON only):
             result = subprocess.run(
                 command,
                 check=True,
-                timeout=300  # 5 minute timeout
+                timeout=900  # 5 minute timeout
             )
             
             # --- END OF CHANGES ---

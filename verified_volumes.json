@@ -2,48 +2,48 @@
   "verified_volumes": [
     {
       "segment_id": 0,
-      "food_name": "Chopped Green Onions",
-      "original_volume_litres": 0.17049724579620898,
-      "volume_reasonable": true,
-      "suggested_volume_litres": 0.17,
+      "food_name": "Chopped Fresh Spring Onions (Scallions)",
+      "original_volume_litres": 0.17117568862636592,
+      "volume_reasonable": false,
+      "suggested_volume_litres": 0.05,
       "confidence": 0.8,
-      "reasoning": "The portion of green onions appears small, consistent with the estimate.",
-      "adjustment_made": false
+      "reasoning": "The portion of scallions appears small, likely less than 0.171L.",
+      "adjustment_made": true
     },
     {
       "segment_id": 1,
-      "food_name": "Chicken in Sauce",
-      "original_volume_litres": 0.25137102516969245,
+      "food_name": "Grilled Chicken in Brown Sauce",
+      "original_volume_litres": 0.261692089137911,
       "volume_reasonable": true,
-      "suggested_volume_litres": 0.25,
+      "suggested_volume_litres": 0.261692089137911,
       "confidence": 0.85,
-      "reasoning": "The chicken portion with sauce seems to match the estimated volume.",
+      "reasoning": "The chicken portion with sauce appears consistent with the estimated volume.",
       "adjustment_made": false
     },
     {
       "segment_id": 2,
       "food_name": "Cooked White Rice",
-      "original_volume_litres": 1.7388658144054767,
+      "original_volume_litres": 1.8085901133370705,
       "volume_reasonable": false,
       "suggested_volume_litres": 0.8,
-      "confidence": 0.75,
-      "reasoning": "The rice portion looks large but not over 1.7L; closer to 0.8L.",
+      "confidence": 0.9,
+      "reasoning": "The rice portion seems large, but 1.8L is excessive. Closer to 0.8L.",
       "adjustment_made": true
     },
     {
       "segment_id": 3,
-      "food_name": "Shredded Purple (Red) Cabbage / Coleslaw",
-      "original_volume_litres": 0.6686968724027117,
+      "food_name": "Shredded Red/Purple Cabbage (Coleslaw/Pickled Cabbage)",
+      "original_volume_litres": 0.6647587130581186,
       "volume_reasonable": true,
-      "suggested_volume_litres": 0.67,
+      "suggested_volume_litres": 0.6647587130581186,
       "confidence": 0.8,
       "reasoning": "The cabbage portion seems consistent with the estimated volume.",
       "adjustment_made": false
     }
   ],
-  "overall_confidence": 0.8,
-  "notes": "The rice volume was adjusted as it appeared overestimated compared to the visual size on the plate.",
+  "overall_confidence": 0.83,
+  "notes": "The rice and scallions volumes were adjusted for more accuracy. Other estimates seem reasonable.",
   "input_file": "final_confirmed_output.json",
-  "image_file": "C:\\Users\\Kavya Shah\\Downloads\\food_volume_estimation\\Screenshot 2025-10-12 135136.png",
+  "image_file": "sessions\\session_20251013_223801_7a4bef11\\uploaded_image.jpg",
   "total_items": 4
 }

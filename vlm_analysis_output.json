@@ -1,66 +1,65 @@
 {
   "analysis_results": [
     {
-      "food_name": "chopped fresh herbs (likely cilantro)",
-      "confidence": 0.78,
+      "food_name": "chopped fresh cilantro (or similar fresh herb)",
+      "confidence": 0.72,
       "major_uncertainties": [
-        "Could be fresh chopped herbs (very low calories) versus a dense sauce/chutney (which may contain oil, nuts, or sugar and be much higher calorie).",
-        "Could be a green paste (pesto/guacamole) rather than loose herbs \u2014 paste would be higher calorie per volume.",
-        "Small bowl volume versus loose-leaf packing: whether the 0.170 L corresponds to lightly packed herbs or a dense paste greatly changes estimated weight and calories."
+        "Could be a fresh herb (cilantro/parsley) which is very low in calories versus a prepared green chutney/sauce that may contain oil, nuts, or sugar and be much higher in calories.",
+        "Could be chopped green onions/scallions (still low cal) rather than cilantro \u2014 small calorie difference but affects precise estimate.",
+        "Portion volume (0.171 L) is relatively large for just herbs; it might be a condiment with denser ingredients increasing calories."
       ],
-      "most_important_question": "Is this a bowl of fresh chopped herbs (e.g., cilantro/parsley) or is it a prepared sauce/chutney/dressing (e.g., pesto, chutney, guacamole)?",
+      "most_important_question": "Is this chopped fresh herb (like cilantro/parsley) or a prepared green chutney/sauce?",
       "ambiguity_flag": true,
       "what_i_cannot_determine": [],
       "assumptions_i_am_making": [],
-      "original_volume_litres": 0.17049724579620898,
+      "original_volume_litres": 0.17117568862636592,
       "segment_id": 0,
       "image_path": "C:\\Users\\Kavya Shah\\Downloads\\food_volume_estimation\\output1_segment0.png"
     },
     {
-      "food_name": "glazed chicken (piece in sauce)",
+      "food_name": "chicken in brown/red sauce (likely grilled/baked chicken fillet)",
       "confidence": 0.78,
       "major_uncertainties": [
-        "Could instead be a vegetarian alternative with similar appearance (paneer or tofu) \u2014 paneer is much higher in calories than tofu or lean chicken.",
-        "Unknown cooking method: fried/battered vs grilled/roasted \u2014 frying would add substantial calories from oil.",
-        "Sauce composition is unknown (sugar-heavy glaze vs light savory sauce) which can change calories significantly.",
-        "Estimated volume may include surrounding sauce, and it\u2019s unclear what fraction is solid protein versus sauce."
+        "This could instead be paneer or tofu rather than chicken; paneer is much higher in calories than tofu and somewhat different from chicken.",
+        "The sauce type is unclear \u2014 it could be a cream- or oil-rich gravy (much higher calories) versus a tomato-based or light glaze (lower calories)."
       ],
-      "most_important_question": "Is this item chicken (meat) or a vegetarian alternative such as paneer or tofu?",
+      "most_important_question": "Is this item chicken (meat) or a vegetarian protein like paneer or tofu?",
       "ambiguity_flag": true,
       "what_i_cannot_determine": [],
       "assumptions_i_am_making": [],
-      "original_volume_litres": 0.25137102516969245,
+      "original_volume_litres": 0.261692089137911,
       "segment_id": 1,
       "image_path": "C:\\Users\\Kavya Shah\\Downloads\\food_volume_estimation\\output1_segment1.png"
     },
     {
       "food_name": "cooked white rice",
-      "confidence": 0.88,
+      "confidence": 0.9,
       "major_uncertainties": [
-        "This could be riced/cauliflower 'rice' (very low calories) rather than real cooked white rice (large calorie difference).",
-        "It might be rice prepared with added coconut milk or other high-calorie mix-ins (higher calories) versus plain steamed rice."
+        "This could be riced cauliflower instead of actual cooked rice \u2014 cauliflower rice has far fewer calories (~25 kcal/100g) vs cooked white rice (~120-130 kcal/100g).",
+        "The rice might have been cooked/served with added fat (butter/oil) which would substantially increase calories compared with plain steamed rice.",
+        "Possibility of a rice mix (e.g., rice + grains or sticky/glutinous rice) that changes density and calories per volume."
       ],
-      "most_important_question": "Is the highlighted item regular cooked/steamed white rice or cauliflower (riced) cauliflower?",
+      "most_important_question": "Is the highlighted item plain cooked white rice (not riced cauliflower)?",
       "ambiguity_flag": true,
       "what_i_cannot_determine": [],
       "assumptions_i_am_making": [],
-      "original_volume_litres": 1.7388658144054767,
+      "original_volume_litres": 1.8085901133370705,
       "segment_id": 2,
       "image_path": "C:\\Users\\Kavya Shah\\Downloads\\food_volume_estimation\\output1_segment2.png"
     },
     {
-      "food_name": "shredded purple/red cabbage (slaw)",
-      "confidence": 0.8,
+      "food_name": "shredded red/purple cabbage (coleslaw/pickled cabbage)",
+      "confidence": 0.78,
       "major_uncertainties": [
-        "Could be plain raw or vinegar-based shredded red/purple cabbage (very low calories, ~20\u201330 kcal/100g).",
-        "Could be a mayonnaise/cream-based coleslaw (much higher calories, ~200\u2013300 kcal/100g) which greatly raises calorie estimate.",
-        "Could be pickled/sweetened red cabbage or cooked/braised with oil and sugar (moderately higher calories than raw)."
+        "Whether the cabbage is dressed in a creamy mayonnaise-based coleslaw (greatly increases calories) or is a vinegar-based/pickled slaw (much lower calories).",
+        "Whether it is raw shredded cabbage or cooked/braised with added sugar and oil (cooked preparations can add substantial calories).",
+        "Possible confusion with other purple vegetable salads (e.g., beet-based salad) though visual appearance favors red cabbage; if it were beetroot, caloric profile and density could differ."
       ],
-      "most_important_question": "Is this shredded purple/red cabbage plain or vinegar-based, or is it a mayonnaise/cream-dressed coleslaw?",
+      "most_important_question": "Is this shredded purple/red cabbage served as a creamy mayonnaise-based coleslaw, or is it a plain/vinegar-based/pickled cabbage (not creamy)?",
       "ambiguity_flag": true,
       "what_i_cannot_determine": [],
       "assumptions_i_am_making": [],
-      "original_volume_litres": 0.6686968724027117,
+      "original_volume_litres": 0.6647587130581186,
       "segment_id": 3,
       "image_path": "C:\\Users\\Kavya Shah\\Downloads\\food_volume_estimation\\output1_segment3.png"
     }

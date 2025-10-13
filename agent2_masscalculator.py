@@ -124,6 +124,9 @@ If not found or no acceptable match, return: {{"found": false}}"""
     
     def search_density_on_web(self, ingredient_name):
         """Search for density on web"""
+        if len(ingredient_name) > 50:
+            print(f"  ⏭️ Skipping web search (name too complex)")
+            return None
         print(f"  🌐 Web searching: {ingredient_name}")
         
         query = f"density of {ingredient_name} in kg/L or g/mL"
@@ -132,7 +135,7 @@ If not found or no acceptable match, return: {{"found": false}}"""
             search_results = self.tavily.search(
                 query=query,
                 search_depth="basic",
-                max_results=3,
+                max_results=2,
                 include_answer=True
             )
             

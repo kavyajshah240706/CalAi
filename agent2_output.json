@@ -2,16 +2,16 @@
   "agent": "Agent 2: Mass & Density Analyst",
   "food_masses": [
     {
-      "food_name": "Chopped Fresh Spring Onion",
+      "food_name": "Chopped Fresh Spring Onions (Scallions)",
       "segment_id": 0,
       "is_basic_ingredient": true,
-      "total_mass_grams": 75.02,
+      "total_mass_grams": 22.0,
       "ingredient_masses": [
         {
-          "ingredient_name": "Chopped Fresh Spring Onion",
-          "volume_litres": 0.17049724579620898,
+          "ingredient_name": "Chopped Fresh Spring Onions (Scallions)",
+          "volume_litres": 0.05,
           "density_kg_per_L": 0.44,
-          "mass_grams": 75.02,
+          "mass_grams": 22.0,
           "method": "PDF_RAG",
           "details": {
             "source": "PDF database"
@@ -20,36 +20,26 @@
       ]
     },
     {
-      "food_name": "Glazed Grilled Chicken in Sauce",
+      "food_name": "Grilled Chicken in Brown Sauce",
       "segment_id": 1,
       "is_basic_ingredient": false,
-      "total_mass_grams": 264.95,
+      "total_mass_grams": 196.27,
       "ingredient_masses": [
         {
-          "ingredient_name": "Chicken (grilled, moisture reduced)",
-          "volume_litres": 0.15082261510181547,
-          "density_kg_per_L": 0.98,
-          "mass_grams": 147.81,
+          "ingredient_name": "Chicken (cooked, sauce absorbed)",
+          "volume_litres": 0.1570152534827466,
+          "density_kg_per_L": 0.25,
+          "mass_grams": 39.25,
           "method": "WEB_SEARCH",
           "details": {
             "source": "Web search"
           }
         },
         {
-          "ingredient_name": "Glaze (honey, soy sauce, garlic, ginger, chili paste)",
-          "volume_litres": 0.08797985880939237,
-          "density_kg_per_L": 1.2,
-          "mass_grams": 105.58,
-          "method": "WEB_SEARCH",
-          "details": {
-            "source": "Web search"
-          }
-        },
-        {
-          "ingredient_name": "Absorbed oil and seasonings",
-          "volume_litres": 0.012568551258484623,
-          "density_kg_per_L": 0.92,
-          "mass_grams": 11.56,
+          "ingredient_name": "Thickened sauce (soy sauce, broth, sugar)",
+          "volume_litres": 0.1046768356551644,
+          "density_kg_per_L": 1.5,
+          "mass_grams": 157.02,
           "method": "WEB_SEARCH",
           "details": {
             "source": "Web search"
@@ -58,37 +48,47 @@
       ]
     },
     {
-      "food_name": "Shredded Purple Cabbage",
+      "food_name": "Cooked White Rice",
       "segment_id": 2,
       "is_basic_ingredient": true,
-      "total_mass_grams": 521.66,
+      "total_mass_grams": 584.0,
       "ingredient_masses": [
         {
-          "ingredient_name": "Shredded Purple Cabbage",
-          "volume_litres": 1.7388658144054767,
-          "density_kg_per_L": 0.3,
-          "mass_grams": 521.66,
-          "method": "WEB_SEARCH",
+          "ingredient_name": "Cooked White Rice",
+          "volume_litres": 0.8,
+          "density_kg_per_L": 0.73,
+          "mass_grams": 584.0,
+          "method": "PDF_RAG",
           "details": {
-            "source": "Web search"
+            "source": "PDF database"
           }
         }
       ]
     },
     {
-      "food_name": "shredded purple/red cabbage (slaw)",
+      "food_name": "Shredded Red/Purple Cabbage (Coleslaw/Pickled Cabbage)",
       "segment_id": 3,
-      "is_basic_ingredient": true,
-      "total_mass_grams": 100.3,
+      "is_basic_ingredient": false,
+      "total_mass_grams": 317.55,
       "ingredient_masses": [
         {
-          "ingredient_name": "shredded purple/red cabbage (slaw)",
-          "volume_litres": 0.6686968724027117,
-          "density_kg_per_L": 0.15,
-          "mass_grams": 100.3,
+          "ingredient_name": "Shredded cabbage (coleslaw/pickled)",
+          "volume_litres": 0.465331099140683,
+          "density_kg_per_L": 0.211,
+          "mass_grams": 98.18,
           "method": "WEB_SEARCH",
           "details": {
             "source": "Web search"
+          }
+        },
+        {
+          "ingredient_name": "Dressing/Brine (mayonnaise, vinegar, sugar, salt)",
+          "volume_litres": 0.19942761391743558,
+          "density_kg_per_L": 1.1,
+          "mass_grams": 219.37,
+          "method": "PDF_RAG",
+          "details": {
+            "source": "PDF database"
           }
         }
       ]
