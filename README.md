@@ -4,6 +4,8 @@ CalAi is an AI-powered calorie estimation and food recommendation system. It can
 
 [Watch demo video](https://drive.google.com/file/d/1dxXk9k26fNdWNCox_TkqL9OqOuhFmO0W/view?usp=drive_link)
 
+Model Backend Pipeline:
+
 ![App Screenshot](./Screenshot%202025-11-20%20005128.png)
 
 
