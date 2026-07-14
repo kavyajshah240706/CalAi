@@ -1,74 +1,25 @@
-from src.backend.agents.schema import GraphState
-from src.backend.database.db_client import get_food_macros
-from google import genai
-from google.genai import types
-from langchain_postgres import PGVector
-import os
-import json
+import re
 
-class GenAIEmbeddingsWrapper:
-    def __init__(self, model_name="text-embedding-004"):
-        self.model_name = model_name
-        self.client = genai.Client(
-            api_key=os.environ.get("GOOGLE_API_KEY"),
-            http_options=types.HttpOptions(api_version="v1")
-        )
-        
-    def embed_documents(self, texts: list[str]) -> list[list[float]]:
-        response = self.client.models.embed_content(
-            model=self.model_name,
-            contents=texts
-        )
-        return [emb.values for emb in response.embeddings]
-        
-    def embed_query(self, text: str) -> list[float]:
-        response = self.client.models.embed_content(
-            model=self.model_name,
-            contents=text
-        )
-        return response.embeddings[0].values
+with open("src/backend/agents/node2_data.py", "r") as f:
+    content = f.read()
 
-def get_rag_context(food_name: str) -> str:
-    """Queries the internal specialized RAG database to find density and macronutrient information for a specific food. Call this first for packaged or rare foods."""
-    try:
-        db_url = os.environ.get("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/postgres")
-        if db_url.startswith("postgresql://"):
-            db_url = db_url.replace("postgresql://", "postgresql+psycopg://")
-            
-        embeddings = GenAIEmbeddingsWrapper(model_name="text-embedding-004")
-        vectorstore = PGVector(
-            embeddings=embeddings,
-            collection_name="food_density_rag_v2",
-            connection=db_url,
-            use_jsonb=True,
-        )
-        docs = vectorstore.similarity_search(f"{food_name} density and macronutrients", k=3)
-        return "\n".join([d.page_content for d in docs])
-    except Exception as e:
-        print(f"RAG Error: {e}")
-        return ""
+# 1. Add docstrings to the tools
+rag_func = """def get_rag_context(food_name: str) -> str:
+    \"\"\"Queries the internal specialized RAG database to find density and macronutrient information for a specific food. Call this first for packaged or rare foods.\"\"\"
+"""
+content = re.sub(r'def get_rag_context\(food_name: str\) -> str:\n', rag_func, content)
 
-def get_firecrawl_context(food_name: str) -> str:
-    """Searches the live internet to find general macronutrient information (calories, protein, carbs, fats) for a food. Call this if the RAG database lacks sufficient information."""
-    try:
-        from firecrawl import FirecrawlApp
-        api_key = os.environ.get("FIRECRAWL_API_KEY")
-        if not api_key: return ""
-        app = FirecrawlApp(api_key=api_key)
-        # We query the web for the macros
-        res = app.search(f"{food_name} nutritional value calories protein carbs fat per 100g")
-        if res and isinstance(res, dict) and "data" in res:
-            chunks = [item.get("content", item.get("markdown", "")) for item in res["data"]]
-            return "\n\n".join(chunks[:2])
-    except Exception as e:
-        print(f"Firecrawl Error: {e}")
-    return ""
+web_func = """def get_firecrawl_context(food_name: str) -> str:
+    \"\"\"Searches the live internet to find general macronutrient information (calories, protein, carbs, fats) for a food. Call this if the RAG database lacks sufficient information.\"\"\"
+"""
+content = re.sub(r'def get_firecrawl_context\(food_name: str\) -> str:\n', web_func, content)
 
-def node2_data_retrieval(state: GraphState) -> GraphState:
-    """
+# 2. Replace node2_data_retrieval
+new_node2 = """def node2_data_retrieval(state: GraphState) -> GraphState:
+    \"\"\"
     Node 2: Agentic Data Retrieval
     An LLM Agent dynamically decides whether to query the DB, RAG, or Web Search.
-    """
+    \"\"\"
     pq = state.parsed_query
     if not pq: return state
         
@@ -86,7 +37,7 @@ def node2_data_retrieval(state: GraphState) -> GraphState:
         http_options=types.HttpOptions(api_version="v1")
     )
     
-    prompt = f"""
+    prompt = f\"\"\"
     You are a clinical nutrition extraction agent. Your goal is to find the macronutrients and density for '{food_name}'.
     You have access to two tools:
     1. get_rag_context: Searches our internal clinical database.
@@ -96,7 +47,7 @@ def node2_data_retrieval(state: GraphState) -> GraphState:
     Once you have enough information, synthesize it and return EXACTLY a valid JSON object with these exact keys:
     "density_g_ml", "kcal_per_100g", "protein_per_100g", "carbs_per_100g", "fats_per_100g".
     Do not return any markdown formatting or extra text.
-    """
+    \"\"\"
     
     try:
         # Initialize the Chat Session with Automatic Function Calling
@@ -152,3 +103,12 @@ def node2_data_retrieval(state: GraphState) -> GraphState:
         }
         
     return state
+"""
+
+# Replace the entire node2_data_retrieval function
+content = re.sub(r'def node2_data_retrieval\(state: GraphState\) -> GraphState:.*', new_node2, content, flags=re.DOTALL)
+
+with open("src/backend/agents/node2_data.py", "w") as f:
+    f.write(content)
+
+print("Agentic RAG Patched!")
