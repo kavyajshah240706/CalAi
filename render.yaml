@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: calai-volume-estimator
+    env: docker
+    dockerfilePath: ./src/volume_estimator/Dockerfile
+    dockerContext: ./src/volume_estimator
+    plan: free
+    healthCheckPath: /health # Assuming flask has a health endpoint, or just omit if none
+    envVars:
+      - key: FLASK_ENV
+        value: production
+
+  - type: web
+    name: calai-backend
+    env: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    # Render automatically exposes internal private URLs between services
+    envVars:
+      - key: VOLUME_ESTIMATOR_URL
+        value: https://calai-volume-estimator.onrender.com # Use the public URL or the internal Render URL
+      # We intentionally do not commit secrets (DATABASE_URL, GOOGLE_API_KEY) here. 
+      # Render will prompt the user to securely enter them in the dashboard!
+      - key: DATABASE_URL
+        sync: false
+      - key: GOOGLE_API_KEY
+        sync: false
