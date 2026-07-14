@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NutriFlow Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    "surface-dim": "#f1f5f9",
+                    "surface": "#f8fafc",
+                    "on-surface": "#0f172a",
+                    "on-surface-variant": "#475569",
+                    "primary": "#10b981", 
+                    "on-primary": "#ffffff",
+                    "primary-container": "#d1fae5",
+                    "on-primary-container": "#065f46",
+                    "primary-fixed": "#34d399",
+                    "primary-fixed-dim": "#059669",
+                    "secondary": "#0ea5e9",
+                    "on-secondary": "#ffffff",
+                    "secondary-container": "#e0f2fe",
+                    "on-secondary-container": "#0369a1",
+                    "background": "#f8fafc",
+                    "on-background": "#0f172a",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-low": "#f8fafc",
+                    "surface-container": "#f1f5f9",
+                    "surface-container-high": "#e2e8f0",
+                    "surface-container-highest": "#cbd5e1",
+                    "outline": "#94a3b8",
+                    "outline-variant": "#cbd5e1",
+                    "error": "#ef4444",
+                    "on-error": "#ffffff",
+                    "error-container": "#fee2e2",
+                    "on-error-container": "#991b1b",
+                    "glass": "rgba(255, 255, 255, 0.7)"
+                },
+                fontFamily: {
+                    "body-lg": ["Inter", "sans-serif"],
+                    "body-md": ["Inter", "sans-serif"],
+                    "body-sm": ["Inter", "sans-serif"],
+                    "headline-xl": ["Manrope", "sans-serif"],
+                    "headline-lg": ["Manrope", "sans-serif"],
+                    "headline-md": ["Manrope", "sans-serif"],
+                    "label-md": ["Inter", "sans-serif"],
+                    "label-sm": ["Inter", "sans-serif"]
+                },
+                animation: {
+                    'fade-in-up': 'fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                    'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                },
+                keyframes: {
+                    fadeInUp: {
+                        '0%': { opacity: '0', transform: 'translateY(20px)' },
+                        '100%': { opacity: '1', transform: 'translateY(0)' },
+                    }
+                }
+            }
+        }
+    }
+</script>
+<style>
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .active-nav-item {
+        color: #10b981 !important;
+        font-weight: 700;
+        background-color: rgba(16, 185, 129, 0.1);
+        border-right: 4px solid #10b981;
+    }
+    .active-nav-item-mobile {
+        color: #10b981 !important;
+        font-weight: 700;
+    }
+    .glass-panel {
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    .hover-lift {
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+    }
+    .hover-lift:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px -8px rgba(16, 185, 129, 0.25);
+    }
+    .scanner-line {
+        width: 100%;
+        height: 4px;
+        background: #10b981;
+        box-shadow: 0 0 15px #34d399, 0 0 30px #10b981;
+        animation: scan 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+    @keyframes scan {
+        0% { transform: translateY(0) scaleY(0.5); opacity: 0; }
+        10% { opacity: 1; scaleY(1); }
+        90% { opacity: 1; scaleY(1); }
+        100% { transform: translateY(220px) scaleY(0.5); opacity: 0; }
+    }
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+</style>
+</head>
+<body class="bg-surface text-on-surface font-body-md text-body-md antialiased min-h-screen">
+<!-- SideNavBar -->
+<nav class="h-screen w-64 fixed left-0 top-0 glass-panel shadow-[0px_4px_24px_rgba(0,0,0,0.06)] flex flex-col py-8 px-4 hidden md:flex z-50 animate-fade-in-up" style="animation-duration: 0.8s;">
+    <div class="mb-8 px-2">
+        <h1 class="font-headline-md text-headline-md font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">NutriFlow</h1>
+        <p class="font-body-sm text-body-sm text-on-surface-variant font-medium mt-1">Premium Health AI</p>
+    </div>
+    <div class="flex-1 flex flex-col space-y-2">
+        <a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all duration-300" href="/">
+            <span class="material-symbols-outlined">dashboard</span>
+            <span class="font-label-md text-label-md">Dashboard</span>
+        </a>
+        <a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all duration-300" href="/scanner">
+            <span class="material-symbols-outlined">monochrome_photos</span>
+            <span class="font-label-md text-label-md">AI Scanner</span>
+        </a>
+        <a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all duration-300" href="/history">
+            <span class="material-symbols-outlined">history</span>
+            <span class="font-label-md text-label-md">History</span>
+        </a>
+        <a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all duration-300" href="/chat">
+            <span class="material-symbols-outlined">forum</span>
+            <span class="font-label-md text-label-md">AI Chat</span>
+        </a>
+        <a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all duration-300" href="/profile">
+            <span class="material-symbols-outlined">person</span>
+            <span class="font-label-md text-label-md">Settings</span>
+        </a>
+    </div>
+    <a href="/scanner" class="w-full bg-gradient-to-r from-primary to-primary-fixed-dim text-on-primary py-3 rounded-xl shadow-lg shadow-primary/30 font-label-md text-label-md hover:scale-105 transition-all duration-300 mt-auto flex items-center justify-center no-underline">
+        <span class="material-symbols-outlined mr-2 text-[20px]">add_circle</span> Log Meal
+    </a>
+</nav>
+<!-- TopAppBar -->
+<header class="hidden md:flex justify-between items-center px-margin-desktop w-full ml-64 fixed top-0 right-0 h-16 bg-surface-bright/80 dark:bg-on-surface/80 backdrop-blur-md z-40 border-b-0">
+<div class="flex items-center gap-8">
+<nav class="flex gap-6">
+<a class="font-body-md text-body-md text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" href="#">Weekly Trends</a>
+<a class="font-body-md text-body-md text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" href="#">Nutrition Guide</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button id="btnAiAnalyze" class="bg-secondary-container/20 text-primary px-4 py-2 rounded-lg font-label-md text-label-md hover:bg-secondary-container/30 transition-colors flex items-center gap-2 border border-primary/20 shadow-soft">
+<span class="material-symbols-outlined" data-icon="smart_toy">smart_toy</span>
+                AI Analyze
+            </button>
+<div class="flex gap-2">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface-container-low">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface-container-low">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</div>
+<img alt="User profile avatar" class="w-8 h-8 rounded-full object-cover border-2 border-surface-container shadow-soft" data-alt="A close up, high resolution portrait of a young professional smiling slightly, bathed in soft natural light, against a clean light grey background, showcasing a modern, clean aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgf3XIZkMGRyB7QZDoNn6FKbCCHVQ5TQeDBnvviF-2eUmn64w7yn1JVCGklYRKz4nhqNOtZMVjmj0e-vwbVmdo0VtuVzxe9-pvP7waPMhj7Dr9ZOfjwBOmVnAnFw3QXOfTXcHr050_YfFjJkMebWaXKqin239FYVg8FNJ3Cy_Gx853TPEfrTu065Y_GdLRypfUyB_T95gNdnLK2viUIP7S94UnqW_TkSQ0EttptgJ_V5QciUuKVhwPA5Veh_DMJdm3qejB3d1ABXPJ"/>
+</div>
+</header>
+<!-- Mobile Bottom Nav (Visible only on mobile) -->
+<nav class="md:hidden fixed bottom-0 w-full bg-surface-container-lowest shadow-[0px_-4px_20px_rgba(0,0,0,0.04)] flex justify-around p-4 z-50">
+<a class="flex flex-col items-center text-primary font-bold" href="/">
+<span class="material-symbols-outlined" data-icon="dashboard" data-weight="fill" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="font-label-sm text-label-sm mt-1">Dashboard</span>
+</a>
+<a class="flex flex-col items-center text-on-surface-variant" href="/scanner">
+<span class="material-symbols-outlined" data-icon="monochrome_photos">monochrome_photos</span>
+<span class="font-label-sm text-label-sm mt-1">Scanner</span>
+</a>
+<a class="flex flex-col items-center text-on-surface-variant" href="/chat">
+<span class="material-symbols-outlined" data-icon="forum">forum</span>
+<span class="font-label-sm text-label-sm mt-1">Chat</span>
+</a>
+<a class="flex flex-col items-center text-on-surface-variant" href="/history">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="font-label-sm text-label-sm mt-1">History</span>
+</a>
+</nav>
+<!-- Main Content -->
+<main class="md:ml-64 pt-6 md:pt-24 pb-24 md:pb-12 px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto min-h-screen flex flex-col h-screen">
+<!-- Header Section -->
+<div class="mb-4">
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface">AI Nutritionist</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Chat with your clinical sports nutritionist, powered by Gemini.</p>
+</div>
+
+<!-- Chat Interface -->
+<div class="flex-grow flex flex-col bg-surface-container-lowest rounded-xl shadow-soft overflow-hidden border border-surface-container-high relative max-h-[calc(100vh-250px)]">
+    <!-- Chat History Area -->
+    <div id="chatHistory" class="flex-grow overflow-y-auto p-6 space-y-6 bg-surface-bright">
+        <div class="flex justify-center">
+            <span class="px-3 py-1 bg-surface-container-low text-on-surface-variant rounded-full text-xs">Loading chat history...</span>
+        </div>
+    </div>
+    
+    <!-- Input Area -->
+    <div class="p-4 bg-surface-container-lowest border-t border-surface-container-high">
+        <div class="relative flex items-center">
+            <input id="chatInput" type="text" class="w-full bg-surface-container-low border-none rounded-full py-3 pl-6 pr-14 font-body-md text-body-md text-on-surface focus:ring-2 focus:ring-primary focus:bg-white transition-all shadow-inner placeholder:text-outline" placeholder="Ask about macros, supplements, or meal planning..." />
+            <button id="chatSend" class="absolute right-2 p-2 bg-primary text-on-primary rounded-full hover:bg-primary-fixed-variant transition-colors flex items-center justify-center h-10 w-10 disabled:opacity-50 disabled:cursor-not-allowed">
+                <span class="material-symbols-outlined text-[20px]" data-icon="send">send</span>
+            </button>
+        </div>
+    </div>
+</div>
+</main>
+<script>
+    const chatHistory = document.getElementById('chatHistory');
+    const chatInput = document.getElementById('chatInput');
+    const chatSend = document.getElementById('chatSend');
+
+    function createMessageElement(role, text) {
+        const div = document.createElement('div');
+        div.className = `flex w-full ${role === 'user' ? 'justify-end' : 'justify-start'}`;
+        
+        let htmlContent = text;
+        if (role === 'assistant' && typeof marked !== 'undefined') {
+            htmlContent = marked.parse(text);
+            // style markdown elements
+            htmlContent = htmlContent.replace(/<ul>/g, '<ul class="list-disc list-inside mt-2 space-y-1">');
+            htmlContent = htmlContent.replace(/<p>/g, '<p class="mb-2">');
+            htmlContent = htmlContent.replace(/<a /g, '<a class="text-primary underline" target="_blank" ');
+        }
+
+        if (role === 'user') {
+            div.innerHTML = `
+                <div class="max-w-[80%] bg-primary text-on-primary rounded-2xl rounded-tr-sm px-5 py-3 shadow-sm font-body-md">
+                    ${text}
+                </div>
+            `;
+        } else {
+            div.innerHTML = `
+                <div class="flex max-w-[85%] items-start gap-3">
+                    <div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0 mt-1">
+                        <span class="material-symbols-outlined text-[18px]" data-icon="smart_toy">smart_toy</span>
+                    </div>
+                    <div class="bg-surface-container-low text-on-surface rounded-2xl rounded-tl-sm px-5 py-3 shadow-sm prose prose-sm max-w-none font-body-md border border-surface-container-high">
+                        ${htmlContent}
+                    </div>
+                </div>
+            `;
+        }
+        return div;
+    }
+
+    function scrollToBottom() {
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+
+    async function loadHistory() {
+        try {
+            const res = await fetch('/api/chat/history');
+            const data = await res.json();
+            chatHistory.innerHTML = ''; // clear loading state
+            
+            if (data.success && data.history.length > 0) {
+                data.history.forEach(msg => {
+                    chatHistory.appendChild(createMessageElement(msg.role, msg.message));
+                });
+            } else {
+                chatHistory.innerHTML = `
+                    <div class="flex flex-col items-center justify-center h-full text-center space-y-3 opacity-60">
+                        <span class="material-symbols-outlined text-4xl" data-icon="forum">forum</span>
+                        <p class="font-body-md">No messages yet. Start a conversation!</p>
+                    </div>
+                `;
+            }
+            scrollToBottom();
+        } catch (e) {
+            chatHistory.innerHTML = `<div class="text-error text-center">Failed to load chat history.</div>`;
+        }
+    }
+
+    async function sendMessage() {
+        const text = chatInput.value.trim();
+        if (!text) return;
+
+        // Clear empty state if present
+        if (chatHistory.querySelector('.material-symbols-outlined[data-icon="forum"]')) {
+            chatHistory.innerHTML = '';
+        }
+
+        // Add user message to UI
+        chatHistory.appendChild(createMessageElement('user', text));
+        chatInput.value = '';
+        chatInput.disabled = true;
+        chatSend.disabled = true;
+        
+        // Add loading bubble
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'flex justify-start';
+        loadingDiv.innerHTML = `
+            <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0 mt-1">
+                    <span class="material-symbols-outlined text-[18px] animate-spin" data-icon="progress_activity">progress_activity</span>
+                </div>
+                <div class="bg-surface-container-low text-on-surface-variant rounded-2xl rounded-tl-sm px-5 py-3 shadow-sm font-body-sm italic">
+                    Consulting knowledge base and web...
+                </div>
+            </div>
+        `;
+        chatHistory.appendChild(loadingDiv);
+        scrollToBottom();
+
+        try {
+            const res = await fetch('/api/chat/message', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: text })
+            });
+            const data = await res.json();
+            
+            // Remove loading
+            chatHistory.removeChild(loadingDiv);
+
+            if (data.success) {
+                chatHistory.appendChild(createMessageElement('assistant', data.response));
+            } else {
+                chatHistory.appendChild(createMessageElement('assistant', `*Error: ${data.error}*`));
+            }
+        } catch (e) {
+            chatHistory.removeChild(loadingDiv);
+            chatHistory.appendChild(createMessageElement('assistant', `*Failed to connect to the server.*`));
+        }
+        
+        chatInput.disabled = false;
+        chatSend.disabled = false;
+        chatInput.focus();
+        scrollToBottom();
+    }
+
+    chatSend.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', loadHistory);
+</script>
+<!-- BottomNavBar (Mobile) -->
+<nav class="fixed bottom-0 left-0 right-0 glass-panel shadow-[0px_-4px_24px_rgba(0,0,0,0.06)] md:hidden z-50 pb-safe">
+    <div class="flex justify-around items-center h-16">
+        <a class="flex flex-col items-center p-2 text-on-surface-variant hover:text-primary transition-colors" href="/">
+            <span class="material-symbols-outlined text-[24px]">dashboard</span>
+            <span class="font-label-sm text-[10px] mt-1 font-medium">Home</span>
+        </a>
+        <a class="flex flex-col items-center p-2 text-on-surface-variant hover:text-primary transition-colors" href="/history">
+            <span class="material-symbols-outlined text-[24px]">history</span>
+            <span class="font-label-sm text-[10px] mt-1 font-medium">History</span>
+        </a>
+        <div class="relative -top-5">
+            <a href="/scanner" class="flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-tr from-primary to-primary-fixed-dim text-on-primary shadow-lg shadow-primary/40 hover:scale-110 transition-transform duration-300">
+                <span class="material-symbols-outlined text-[28px]">add</span>
+            </a>
+        </div>
+        <a class="flex flex-col items-center p-2 text-on-surface-variant hover:text-primary transition-colors" href="/chat">
+            <span class="material-symbols-outlined text-[24px]">forum</span>
+            <span class="font-label-sm text-[10px] mt-1 font-medium">AI Chat</span>
+        </a>
+        <a class="flex flex-col items-center p-2 text-on-surface-variant hover:text-primary transition-colors" href="/profile">
+            <span class="material-symbols-outlined text-[24px]">person</span>
+            <span class="font-label-sm text-[10px] mt-1 font-medium">Profile</span>
+        </a>
+    </div>
+</nav>
+
+<script>
+    // Automatically highlight active navigation
+    document.addEventListener("DOMContentLoaded", () => {
+        const path = window.location.pathname;
+        const desktopLinks = document.querySelectorAll('nav.w-64 a');
+        const mobileLinks = document.querySelectorAll('nav.fixed.bottom-0 a');
+        
+        const setActive = (links, className) => {
+            links.forEach(link => {
+                link.classList.remove('text-primary', 'font-bold', 'border-primary', 'bg-secondary-container/10', 'border-r-4');
+                const href = link.getAttribute('href');
+                if (href === '/' && path === '/') {
+                    link.classList.add(className);
+                } else if (href !== '/' && path.startsWith(href)) {
+                    link.classList.add(className);
+                }
+            });
+        };
+        
+        setActive(desktopLinks, 'active-nav-item');
+        setActive(mobileLinks, 'active-nav-item-mobile');
+    });
+</script>
+
+</body></html>

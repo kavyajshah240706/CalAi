@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+pydantic
+psycopg2-binary
+langchain
+langgraph
+langchain-google-genai
+python-dotenv
+pypdf
+langchain-postgres
+psycopg[binary]
+firecrawl-py

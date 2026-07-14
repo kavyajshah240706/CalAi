@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NutriFlow Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    "surface-dim": "#f1f5f9",
+                    "surface": "#f8fafc",
+                    "on-surface": "#0f172a",
+                    "on-surface-variant": "#475569",
+                    "primary": "#10b981", 
+                    "on-primary": "#ffffff",
+                    "primary-container": "#d1fae5",
+                    "on-primary-container": "#065f46",
+                    "primary-fixed": "#34d399",
+                    "primary-fixed-dim": "#059669",
+                    "secondary": "#0ea5e9",
+                    "on-secondary": "#ffffff",
+                    "secondary-container": "#e0f2fe",
+                    "on-secondary-container": "#0369a1",
+                    "background": "#f8fafc",
+                    "on-background": "#0f172a",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-low": "#f8fafc",
+                    "surface-container": "#f1f5f9",
+                    "surface-container-high": "#e2e8f0",
+                    "surface-container-highest": "#cbd5e1",
+                    "outline": "#94a3b8",
+                    "outline-variant": "#cbd5e1",
+                    "error": "#ef4444",
+                    "on-error": "#ffffff",
+                    "error-container": "#fee2e2",
+                    "on-error-container": "#991b1b",
+                    "glass": "rgba(255, 255, 255, 0.7)"
+                },
+                fontFamily: {
+                    "body-lg": ["Inter", "sans-serif"],
+                    "body-md": ["Inter", "sans-serif"],
+                    "body-sm": ["Inter", "sans-serif"],
+                    "headline-xl": ["Manrope", "sans-serif"],
+                    "headline-lg": ["Manrope", "sans-serif"],
+                    "headline-md": ["Manrope", "sans-serif"],
+                    "label-md": ["Inter", "sans-serif"],
+                    "label-sm": ["Inter", "sans-serif"]
+                },
+                animation: {
+                    'fade-in-up': 'fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                    'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                },
+                keyframes: {
+                    fadeInUp: {
+                        '0%': { opacity: '0', transform: 'translateY(20px)' },
+                        '100%': { opacity: '1', transform: 'translateY(0)' },
+                    }
+                }
+            }
+        }
+    }
+</script>
+<style>
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .active-nav-item {
+        color: #10b981 !important;
+        font-weight: 700;
+        background-color: rgba(16, 185, 129, 0.1);
+        border-right: 4px solid #10b981;
+    }
+    .active-nav-item-mobile {
+        color: #10b981 !important;
+        font-weight: 700;
+    }
+    .glass-panel {
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    .hover-lift {
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+    }
+    .hover-lift:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px -8px rgba(16, 185, 129, 0.25);
+    }
+    .scanner-line {
+        width: 100%;
+        height: 4px;
+        background: #10b981;
+        box-shadow: 0 0 15px #34d399, 0 0 30px #10b981;
+        animation: scan 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+    @keyframes scan {
+        0% { transform: translateY(0) scaleY(0.5); opacity: 0; }
+        10% { opacity: 1; scaleY(1); }
+        90% { opacity: 1; scaleY(1); }
+        100% { transform: translateY(220px) scaleY(0.5); opacity: 0; }
+    }
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+</style>
+</head>
+<body class="bg-surface text-on-surface font-body-md text-body-md antialiased min-h-screen">
+<!-- SideNavBar -->
+<nav class="h-screen w-64 fixed left-0 top-0 glass-panel shadow-[0px_4px_24px_rgba(0,0,0,0.06)] flex flex-col py-8 px-4 hidden md:flex z-50 animate-fade-in-up" style="animation-duration: 0.8s;">
+    <div class="mb-8 px-2">
+        <h1 class="font-headline-md text-headline-md font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">NutriFlow</h1>
+        <p class="font-body-sm text-body-sm text-on-surface-variant font-medium mt-1">Premium Health AI</p>
+    </div>
+    <div class="flex-1 flex flex-col space-y-2">
+        <a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all duration-300" href="/">
+            <span class="material-symbols-outlined">dashboard</span>
+            <span class="font-label-md text-label-md">Dashboard</span>
+        </a>
+        <a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all duration-300" href="/scanner">
+            <span class="material-symbols-outlined">monochrome_photos</span>
+            <span class="font-label-md text-label-md">AI Scanner</span>
+        </a>
+        <a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all duration-300" href="/history">
+            <span class="material-symbols-outlined">history</span>
+            <span class="font-label-md text-label-md">History</span>
+        </a>
+        <a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all duration-300" href="/chat">
+            <span class="material-symbols-outlined">forum</span>
+            <span class="font-label-md text-label-md">AI Chat</span>
+        </a>
+        <a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all duration-300" href="/profile">
+            <span class="material-symbols-outlined">person</span>
+            <span class="font-label-md text-label-md">Settings</span>
+        </a>
+    </div>
+    <a href="/scanner" class="w-full bg-gradient-to-r from-primary to-primary-fixed-dim text-on-primary py-3 rounded-xl shadow-lg shadow-primary/30 font-label-md text-label-md hover:scale-105 transition-all duration-300 mt-auto flex items-center justify-center no-underline">
+        <span class="material-symbols-outlined mr-2 text-[20px]">add_circle</span> Log Meal
+    </a>
+</nav>
+<!-- TopAppBar -->
+<header class="hidden md:flex justify-between items-center px-margin-desktop w-full ml-64 fixed top-0 right-0 h-16 bg-surface-bright/80 dark:bg-on-surface/80 backdrop-blur-md z-40 border-b-0">
+<div class="flex items-center gap-8">
+<nav class="flex gap-6">
+<a class="font-body-md text-body-md text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" href="#">Weekly Trends</a>
+<a class="font-body-md text-body-md text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" href="#">Nutrition Guide</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button id="btnAiAnalyze" class="bg-secondary-container/20 text-primary px-4 py-2 rounded-lg font-label-md text-label-md hover:bg-secondary-container/30 transition-colors flex items-center gap-2 border border-primary/20 shadow-soft">
+<span class="material-symbols-outlined" data-icon="smart_toy">smart_toy</span>
+                AI Analyze
+            </button>
+<div class="flex gap-2">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface-container-low">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface-container-low">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</div>
+<img alt="User profile avatar" class="w-8 h-8 rounded-full object-cover border-2 border-surface-container shadow-soft" data-alt="A close up, high resolution portrait of a young professional smiling slightly, bathed in soft natural light, against a clean light grey background, showcasing a modern, clean aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgf3XIZkMGRyB7QZDoNn6FKbCCHVQ5TQeDBnvviF-2eUmn64w7yn1JVCGklYRKz4nhqNOtZMVjmj0e-vwbVmdo0VtuVzxe9-pvP7waPMhj7Dr9ZOfjwBOmVnAnFw3QXOfTXcHr050_YfFjJkMebWaXKqin239FYVg8FNJ3Cy_Gx853TPEfrTu065Y_GdLRypfUyB_T95gNdnLK2viUIP7S94UnqW_TkSQ0EttptgJ_V5QciUuKVhwPA5Veh_DMJdm3qejB3d1ABXPJ"/>
+</div>
+</header>
+<!-- Mobile Bottom Nav (Visible only on mobile) -->
+<nav class="md:hidden fixed bottom-0 w-full bg-surface-container-lowest shadow-[0px_-4px_20px_rgba(0,0,0,0.04)] flex justify-around p-4 z-50">
+<a class="flex flex-col items-center text-primary font-bold" href="/">
+<span class="material-symbols-outlined" data-icon="dashboard" data-weight="fill" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="font-label-sm text-label-sm mt-1">Dashboard</span>
+</a>
+<a class="flex flex-col items-center text-on-surface-variant" href="/scanner">
+<span class="material-symbols-outlined" data-icon="monochrome_photos">monochrome_photos</span>
+<span class="font-label-sm text-label-sm mt-1">Scanner</span>
+</a>
+<a class="flex flex-col items-center text-on-surface-variant" href="/chat">
+<span class="material-symbols-outlined" data-icon="forum">forum</span>
+<span class="font-label-sm text-label-sm mt-1">Chat</span>
+</a>
+<a class="flex flex-col items-center text-on-surface-variant" href="/history">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="font-label-sm text-label-sm mt-1">History</span>
+</a>
+</nav>
+<!-- Main Content -->
+<main class="md:ml-64 pt-6 md:pt-24 pb-24 md:pb-12 px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto min-h-screen">
+<!-- Header Section -->
+<div class="mb-8 flex justify-between items-end">
+<div>
+<h2 id="userNameDisplay" class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface">Good Morning</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Here is your nutritional overview for today.</p>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- Calories Remaining - Main Ring (Spans 4 cols on desktop) -->
+<div class="lg:col-span-4 bg-surface-container-lowest rounded-xl shadow-soft p-8 flex flex-col items-center justify-center relative hover:shadow-hover transition-shadow duration-300">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-6 absolute top-6 left-6">Calories</h3>
+<div class="relative w-48 h-48 mt-8">
+<!-- Background Ring -->
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 36 36">
+<path class="text-surface-container-high stroke-current" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="3"></path>
+<!-- Progress Ring -->
+<path class="text-primary stroke-current ring-progress" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-linecap="round" stroke-width="3"></path>
+</svg>
+<!-- Center Text -->
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span id="calsRemaining" class="font-headline-xl text-headline-xl text-on-surface">0</span>
+<span class="font-label-md text-label-md text-on-surface-variant">Remaining</span>
+</div>
+</div>
+<div class="mt-6 w-full flex justify-between text-center px-4">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Goal</p>
+<p id="calsGoal" class="font-body-md text-body-md font-semibold text-on-surface">0</p>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Food</p>
+<p id="calsConsumed" class="font-body-md text-body-md font-semibold text-primary">0</p>
+</div>
+</div>
+</div>
+<!-- Macros Breakdown (Spans 8 cols on desktop) -->
+<div class="lg:col-span-8 bg-surface-container-lowest rounded-xl shadow-soft p-6 md:p-8 hover:shadow-hover transition-shadow duration-300">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-headline-md text-headline-md text-on-surface">Macronutrients</h3>
+<a href="/profile" class="text-primary font-label-md text-label-md hover:underline no-underline">Edit Goals</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 h-full">
+<!-- Protein -->
+<div class="flex flex-col items-center justify-center p-4 bg-surface-container-low rounded-lg border-l-4 border-[#3b82f6]">
+<div class="relative w-24 h-24 mb-4">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 36 36">
+<path class="text-surface-container-high stroke-current" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="4"></path>
+<path id="proteinRing" class="text-[#3b82f6] stroke-current macro-ring-p" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-linecap="round" stroke-width="4"></path>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center">
+<span id="proteinConsumed" class="font-body-lg text-body-lg font-semibold text-on-surface">0g</span>
+</div>
+</div>
+<p class="font-label-md text-label-md text-on-surface-variant">Protein</p>
+<p id="proteinGoal" class="font-label-sm text-label-sm text-outline mt-1">0g Goal</p>
+</div>
+<!-- Carbs -->
+<div class="flex flex-col items-center justify-center p-4 bg-surface-container-low rounded-lg border-l-4 border-secondary">
+<div class="relative w-24 h-24 mb-4">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 36 36">
+<path class="text-surface-container-high stroke-current" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="4"></path>
+<path id="carbsRing" class="text-secondary stroke-current macro-ring-c" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-linecap="round" stroke-width="4"></path>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center">
+<span id="carbsConsumed" class="font-body-lg text-body-lg font-semibold text-on-surface">0g</span>
+</div>
+</div>
+<p class="font-label-md text-label-md text-on-surface-variant">Carbs</p>
+<p id="carbsGoal" class="font-label-sm text-label-sm text-outline mt-1">0g Goal</p>
+</div>
+<!-- Fats -->
+<div class="flex flex-col items-center justify-center p-4 bg-surface-container-low rounded-lg border-l-4 border-[#f59e0b]">
+<div class="relative w-24 h-24 mb-4">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 36 36">
+<path class="text-surface-container-high stroke-current" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="4"></path>
+<path id="fatsRing" class="text-[#f59e0b] stroke-current macro-ring-f" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-linecap="round" stroke-width="4"></path>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center">
+<span id="fatsConsumed" class="font-body-lg text-body-lg font-semibold text-on-surface">0g</span>
+</div>
+</div>
+<p class="font-label-md text-label-md text-on-surface-variant">Fats</p>
+<p id="fatsGoal" class="font-label-sm text-label-sm text-outline mt-1">0g Goal</p>
+</div>
+</div>
+</div>
+<!-- Quick Log & Scanner Command Surface (Spans 5 cols) -->
+<div class="lg:col-span-5 bg-surface-bright border border-outline-variant/30 rounded-xl shadow-soft p-6 relative overflow-hidden backdrop-blur-md">
+<!-- AI Accent Line -->
+<div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-secondary"></div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="auto_awesome">auto_awesome</span>
+                    Quick Log
+                </h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-6">Type or scan to log your meal instantly.</p>
+<div class="relative mb-4">
+<input id="quickLogInput" class="w-full bg-[#F1F5F9] border-none rounded-lg py-3 pl-4 pr-12 font-body-md text-body-md text-on-surface focus:ring-2 focus:ring-primary focus:bg-white transition-all shadow-inner placeholder:text-outline" placeholder="e.g., 2 eggs and a slice of toast" type="text"/>
+<button id="quickLogSend" class="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 text-primary hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="send">send</span>
+</button>
+</div>
+<div id="quickLogResult" class="hidden mb-4 p-3 bg-primary/10 rounded-lg text-sm text-on-surface"></div>
+<div class="flex gap-4 mt-6">
+<a href="/scanner" class="flex-1 bg-secondary-container/30 text-primary py-3 rounded-lg font-label-md text-label-md hover:bg-secondary-container/50 transition-colors flex items-center justify-center gap-2 no-underline">
+<span class="material-symbols-outlined" data-icon="barcode_scanner">barcode_scanner</span>
+                        Scan Barcode
+                    </a>
+<a href="/scanner" class="flex-1 bg-secondary-container/30 text-primary py-3 rounded-lg font-label-md text-label-md hover:bg-secondary-container/50 transition-colors flex items-center justify-center gap-2 no-underline">
+<span class="material-symbols-outlined" data-icon="add_a_photo">add_a_photo</span>
+                        Snap Meal
+                    </a>
+</div>
+</div>
+<!-- Today's Meals (Spans 7 cols) -->
+<div class="lg:col-span-7 bg-surface-container-lowest rounded-xl shadow-soft p-6 hover:shadow-hover transition-shadow duration-300">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-headline-md text-headline-md text-on-surface">Today's Meals</h3>
+<span id="todayTotalCals" class="font-label-md text-label-md text-on-surface-variant">0 kcal total</span>
+</div>
+<div id="todayMealsList" class="space-y-4">
+    <div class="text-center py-4 text-on-surface-variant">Loading meals...</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Daily AI Insights -->
+<div class="mt-6 bg-surface-bright border border-primary/20 rounded-xl shadow-soft p-6 relative overflow-hidden backdrop-blur-md">
+<div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-secondary"></div>
+<h3 class="font-headline-md text-headline-md text-primary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="auto_awesome">auto_awesome</span>
+    Gemini 2.5 Pro Daily Insights
+</h3>
+<div id="dailyInsightsContent" class="text-on-surface-variant font-body-md animate-pulse">
+    Generating clinical insights on your daily macro completion...
+</div>
+</div>
+
+</main>
+<script>
+async function loadDashboardData() {
+    try {
+        const [dashRes, profileRes] = await Promise.all([
+            fetch('/api/dashboard'),
+            fetch('/api/profile')
+        ]);
+        const dashData = await dashRes.json();
+        const profileData = await profileRes.json();
+        
+        if (profileData.success && profileData.profile) {
+            const p = profileData.profile;
+            document.getElementById('userNameDisplay').innerText = 'Good Morning, ' + (p.name ? p.name.split(' ')[0] : 'User');
+            document.getElementById('calsGoal').innerText = Math.round(p.daily_calorie_target);
+            document.getElementById('proteinGoal').innerText = Math.round(p.protein_goal_g) + 'g Goal';
+            document.getElementById('carbsGoal').innerText = Math.round(p.carbs_goal_g) + 'g Goal';
+            document.getElementById('fatsGoal').innerText = Math.round(p.fats_goal_g) + 'g Goal';
+            
+            if (dashData.success) {
+                const t = dashData.totals;
+                document.getElementById('calsConsumed').innerText = Math.round(t.calories);
+                document.getElementById('calsRemaining').innerText = Math.round(Math.max(0, p.daily_calorie_target - t.calories));
+                
+                document.getElementById('proteinConsumed').innerText = Math.round(t.protein) + 'g';
+                document.getElementById('carbsConsumed').innerText = Math.round(t.carbs) + 'g';
+                document.getElementById('fatsConsumed').innerText = Math.round(t.fats) + 'g';
+                
+                // Update rings
+                document.querySelector('.ring-progress').style.strokeDashoffset = 100 - Math.min(100, (t.calories / p.daily_calorie_target) * 100);
+                document.getElementById('proteinRing').style.strokeDashoffset = 100 - Math.min(100, (t.protein / p.protein_goal_g) * 100);
+                document.getElementById('carbsRing').style.strokeDashoffset = 100 - Math.min(100, (t.carbs / p.carbs_goal_g) * 100);
+                document.getElementById('fatsRing').style.strokeDashoffset = 100 - Math.min(100, (t.fats / p.fats_goal_g) * 100);
+                
+                document.getElementById('todayTotalCals').innerText = Math.round(t.calories) + ' kcal total';
+                
+                const mealsList = document.getElementById('todayMealsList');
+                if (dashData.today_meals.length > 0) {
+                    mealsList.innerHTML = dashData.today_meals.map(meal => {
+                        const date = new Date(meal.created_at);
+                        const timeStr = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                        return `
+                        <div class="flex items-center p-4 bg-surface-container-low rounded-lg border-l-4 border-primary hover:bg-surface-container transition-colors cursor-pointer">
+                        <img alt="${meal.food_name}" class="w-16 h-16 rounded-md object-cover mr-4 shadow-sm" src="${meal.image_url || 'https://via.placeholder.com/150'}"/>
+                        <div class="flex-grow">
+                        <h4 class="font-body-lg text-body-lg font-medium text-on-surface">${meal.food_name}</h4>
+                        <p class="font-body-sm text-body-sm text-on-surface-variant">${timeStr}</p>
+                        </div>
+                        <div class="text-right">
+                        <span class="font-headline-md text-headline-md text-on-surface">${Math.round(meal.calories || 0)}</span>
+                        <span class="font-body-sm text-body-sm text-on-surface-variant block">kcal</span>
+                        </div>
+                        </div>
+                        `;
+                    }).join('');
+                } else {
+                    mealsList.innerHTML = `<div class="text-center py-4 text-on-surface-variant">No meals logged today yet.</div>`;
+                }
+                
+                // Fetch AI Insights in background
+                fetch('/api/daily-insights')
+                    .then(res => res.json())
+                    .then(data => {
+                        const insightsDiv = document.getElementById('dailyInsightsContent');
+                        insightsDiv.classList.remove('animate-pulse');
+                        if (data.success && data.insight) {
+                            if (typeof marked !== 'undefined') {
+                                let html = marked.parse(data.insight);
+                                // Add tailwind classes
+                                html = html.replace(/<ul>/g, '<ul class="space-y-2 font-body-md list-disc list-inside mt-2">');
+                                html = html.replace(/<p>/g, '<p class="mb-2">');
+                                html = html.replace(/<strong>/g, '<strong class="text-on-surface">');
+                                insightsDiv.innerHTML = `<div class="prose prose-sm max-w-none text-on-surface">${html}</div>`;
+                            } else {
+                                let html = data.insight
+                                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                                    .replace(/\n/g, '<br>');
+                                insightsDiv.innerHTML = `<div class="prose prose-sm max-w-none text-on-surface">${html}</div>`;
+                            }
+                        } else {
+                            insightsDiv.innerHTML = "Not enough data to generate insights today.";
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        const insightsDiv = document.getElementById('dailyInsightsContent');
+                        insightsDiv.classList.remove('animate-pulse');
+                        insightsDiv.innerHTML = "Failed to load insights.";
+                    });
+            }
+        }
+    } catch(e) {
+        console.error('Error fetching dashboard data:', e);
+    }
+}
+document.addEventListener('DOMContentLoaded', loadDashboardData);
+
+// AI Analyze button scrolls to insights
+document.getElementById('btnAiAnalyze')?.addEventListener('click', () => {
+    document.getElementById('dailyInsightsContent')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+});
+
+// Quick Log
+const quickLogInput = document.getElementById('quickLogInput');
+const quickLogSend = document.getElementById('quickLogSend');
+const quickLogResult = document.getElementById('quickLogResult');
+
+async function submitQuickLog() {
+    const text = quickLogInput.value.trim();
+    if (!text) return;
+    quickLogSend.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span>';
+    quickLogSend.disabled = true;
+    quickLogResult.classList.remove('hidden');
+    quickLogResult.innerHTML = 'Analyzing with Gemini 2.5 Pro...';
+    try {
+        const res = await fetch('/api/quick-log', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ text })
+        });
+        const data = await res.json();
+        if (data.success) {
+            const c = data.calculated_nutrition || {};
+            quickLogResult.innerHTML = `<strong>${c.food || text}</strong> logged! ${Math.round(c.calories || 0)} kcal, P:${c.protein||0}g C:${c.carbs||0}g F:${c.fats||0}g`;
+            quickLogInput.value = '';
+            // Refresh dashboard data
+            setTimeout(() => loadDashboardData(), 1500);
+        } else {
+            quickLogResult.innerHTML = 'Failed: ' + (data.error || 'Unknown error');
+        }
+    } catch(e) {
+        quickLogResult.innerHTML = 'Error communicating with server.';
+    }
+    quickLogSend.innerHTML = '<span class="material-symbols-outlined">send</span>';
+    quickLogSend.disabled = false;
+}
+
+quickLogSend.addEventListener('click', submitQuickLog);
+quickLogInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') submitQuickLog();
+});
+</script>
+<!-- BottomNavBar (Mobile) -->
+<nav class="fixed bottom-0 left-0 right-0 glass-panel shadow-[0px_-4px_24px_rgba(0,0,0,0.06)] md:hidden z-50 pb-safe">
+    <div class="flex justify-around items-center h-16">
+        <a class="flex flex-col items-center p-2 text-on-surface-variant hover:text-primary transition-colors" href="/">
+            <span class="material-symbols-outlined text-[24px]">dashboard</span>
+            <span class="font-label-sm text-[10px] mt-1 font-medium">Home</span>
+        </a>
+        <a class="flex flex-col items-center p-2 text-on-surface-variant hover:text-primary transition-colors" href="/history">
+            <span class="material-symbols-outlined text-[24px]">history</span>
+            <span class="font-label-sm text-[10px] mt-1 font-medium">History</span>
+        </a>
+        <div class="relative -top-5">
+            <a href="/scanner" class="flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-tr from-primary to-primary-fixed-dim text-on-primary shadow-lg shadow-primary/40 hover:scale-110 transition-transform duration-300">
+                <span class="material-symbols-outlined text-[28px]">add</span>
+            </a>
+        </div>
+        <a class="flex flex-col items-center p-2 text-on-surface-variant hover:text-primary transition-colors" href="/chat">
+            <span class="material-symbols-outlined text-[24px]">forum</span>
+            <span class="font-label-sm text-[10px] mt-1 font-medium">AI Chat</span>
+        </a>
+        <a class="flex flex-col items-center p-2 text-on-surface-variant hover:text-primary transition-colors" href="/profile">
+            <span class="material-symbols-outlined text-[24px]">person</span>
+            <span class="font-label-sm text-[10px] mt-1 font-medium">Profile</span>
+        </a>
+    </div>
+</nav>
+
+<script>
+    // Automatically highlight active navigation
+    document.addEventListener("DOMContentLoaded", () => {
+        const path = window.location.pathname;
+        const desktopLinks = document.querySelectorAll('nav.w-64 a');
+        const mobileLinks = document.querySelectorAll('nav.fixed.bottom-0 a');
+        
+        const setActive = (links, className) => {
+            links.forEach(link => {
+                link.classList.remove('text-primary', 'font-bold', 'border-primary', 'bg-secondary-container/10', 'border-r-4');
+                const href = link.getAttribute('href');
+                if (href === '/' && path === '/') {
+                    link.classList.add(className);
+                } else if (href !== '/' && path.startsWith(href)) {
+                    link.classList.add(className);
+                }
+            });
+        };
+        
+        setActive(desktopLinks, 'active-nav-item');
+        setActive(mobileLinks, 'active-nav-item-mobile');
+    });
+</script>
+
+</body></html>

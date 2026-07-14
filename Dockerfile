@@ -1,24 +1,30 @@
-FROM python:3.6
+# Use Python 3.11 slim image
+FROM python:3.11-slim
 
-# Install dependencies
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies needed for psycopg2 and others
+RUN apt-get update && apt-get install -y \
+    gcc \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements
 COPY requirements.txt .
+
+# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install food-volume-estimation package
-ADD food_volume_estimation/ food_volume_estimation/
-copy setup.py .
-RUN python setup.py install
+# Copy the entire src directory and env
+COPY src/ ./src/
+COPY .env .
 
-# Add model files to image
-COPY models/fine_tune_food_videos/monovideo_fine_tune_food_videos.json models/depth_architecture.json
-COPY models/fine_tune_food_videos/monovideo_fine_tune_food_videos.h5 models/depth_weights.h5
-COPY models/segmentation/mask_rcnn_food_segmentation.h5 models/segmentation_weights.h5
+# Set Python path so src modules can be resolved
+ENV PYTHONPATH=/app
 
-# Copy and execute server script
-COPY food_volume_estimation_app.py .
-ENTRYPOINT ["python", "food_volume_estimation_app.py", \
-            "--depth_model_architecture", "models/depth_architecture.json", \
-            "--depth_model_weights", "models/depth_weights.h5", \
-            "--segmentation_model_weights", "models/segmentation_weights.h5", \
-            "--density_db_source"]
+# Expose port
+EXPOSE 8000
 
+# Command to run the application
+CMD ["uvicorn", "src.backend.main:app", "--host", "0.0.0.0", "--port", "8000"]

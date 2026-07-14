@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AI Scanner - NutriFlow</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    "surface-dim": "#f1f5f9",
+                    "surface": "#f8fafc",
+                    "on-surface": "#0f172a",
+                    "on-surface-variant": "#475569",
+                    "primary": "#10b981", 
+                    "on-primary": "#ffffff",
+                    "primary-container": "#d1fae5",
+                    "on-primary-container": "#065f46",
+                    "primary-fixed": "#34d399",
+                    "primary-fixed-dim": "#059669",
+                    "secondary": "#0ea5e9",
+                    "on-secondary": "#ffffff",
+                    "secondary-container": "#e0f2fe",
+                    "on-secondary-container": "#0369a1",
+                    "background": "#f8fafc",
+                    "on-background": "#0f172a",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-low": "#f8fafc",
+                    "surface-container": "#f1f5f9",
+                    "surface-container-high": "#e2e8f0",
+                    "surface-container-highest": "#cbd5e1",
+                    "outline": "#94a3b8",
+                    "outline-variant": "#cbd5e1",
+                    "error": "#ef4444",
+                    "on-error": "#ffffff",
+                    "error-container": "#fee2e2",
+                    "on-error-container": "#991b1b",
+                    "glass": "rgba(255, 255, 255, 0.7)"
+                },
+                fontFamily: {
+                    "body-lg": ["Inter", "sans-serif"],
+                    "body-md": ["Inter", "sans-serif"],
+                    "body-sm": ["Inter", "sans-serif"],
+                    "headline-xl": ["Manrope", "sans-serif"],
+                    "headline-lg": ["Manrope", "sans-serif"],
+                    "headline-md": ["Manrope", "sans-serif"],
+                    "label-md": ["Inter", "sans-serif"],
+                    "label-sm": ["Inter", "sans-serif"]
+                },
+                animation: {
+                    'fade-in-up': 'fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                    'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                },
+                keyframes: {
+                    fadeInUp: {
+                        '0%': { opacity: '0', transform: 'translateY(20px)' },
+                        '100%': { opacity: '1', transform: 'translateY(0)' },
+                    }
+                }
+            }
+        }
+    }
+</script>
+<style>
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .active-nav-item {
+        color: #10b981 !important;
+        font-weight: 700;
+        background-color: rgba(16, 185, 129, 0.1);
+        border-right: 4px solid #10b981;
+    }
+    .active-nav-item-mobile {
+        color: #10b981 !important;
+        font-weight: 700;
+    }
+    .glass-panel {
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    .hover-lift {
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+    }
+    .hover-lift:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px -8px rgba(16, 185, 129, 0.25);
+    }
+    .scanner-line {
+        width: 100%;
+        height: 4px;
+        background: #10b981;
+        box-shadow: 0 0 15px #34d399, 0 0 30px #10b981;
+        animation: scan 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+    @keyframes scan {
+        0% { transform: translateY(0) scaleY(0.5); opacity: 0; }
+        10% { opacity: 1; scaleY(1); }
+        90% { opacity: 1; scaleY(1); }
+        100% { transform: translateY(220px) scaleY(0.5); opacity: 0; }
+    }
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+</style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased h-screen overflow-hidden flex">
+<!-- SideNavBar -->
+<nav class="h-screen w-64 fixed left-0 top-0 glass-panel shadow-[0px_4px_24px_rgba(0,0,0,0.06)] flex flex-col py-8 px-4 hidden md:flex z-50 animate-fade-in-up" style="animation-duration: 0.8s;">
+    <div class="mb-8 px-2">
+        <h1 class="font-headline-md text-headline-md font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">NutriFlow</h1>
+        <p class="font-body-sm text-body-sm text-on-surface-variant font-medium mt-1">Premium Health AI</p>
+    </div>
+    <div class="flex-1 flex flex-col space-y-2">
+        <a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all duration-300" href="/">
+            <span class="material-symbols-outlined">dashboard</span>
+            <span class="font-label-md text-label-md">Dashboard</span>
+        </a>
+        <a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all duration-300" href="/scanner">
+            <span class="material-symbols-outlined">monochrome_photos</span>
+            <span class="font-label-md text-label-md">AI Scanner</span>
+        </a>
+        <a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all duration-300" href="/history">
+            <span class="material-symbols-outlined">history</span>
+            <span class="font-label-md text-label-md">History</span>
+        </a>
+        <a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all duration-300" href="/chat">
+            <span class="material-symbols-outlined">forum</span>
+            <span class="font-label-md text-label-md">AI Chat</span>
+        </a>
+        <a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all duration-300" href="/profile">
+            <span class="material-symbols-outlined">person</span>
+            <span class="font-label-md text-label-md">Settings</span>
+        </a>
+    </div>
+    <a href="/scanner" class="w-full bg-gradient-to-r from-primary to-primary-fixed-dim text-on-primary py-3 rounded-xl shadow-lg shadow-primary/30 font-label-md text-label-md hover:scale-105 transition-all duration-300 mt-auto flex items-center justify-center no-underline">
+        <span class="material-symbols-outlined mr-2 text-[20px]">add_circle</span> Log Meal
+    </a>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col md:ml-64 h-screen overflow-y-auto">
+<!-- TopAppBar -->
+<header class="fixed top-0 right-0 left-0 md:left-64 h-16 glass-panel flex justify-between items-center px-4 md:px-8 z-40 animate-fade-in-up" style="animation-duration: 0.5s;">
+<div class="flex items-center md:hidden">
+<h1 class="font-headline-md text-headline-md font-bold text-primary">NutriFlow</h1>
+</div>
+<div class="hidden md:flex space-x-6">
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">Weekly Trends</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">Nutrition Guide</a>
+</div>
+<div class="flex items-center space-x-4 ml-auto">
+<button class="text-primary font-label-md text-label-md hover:text-primary-fixed-dim transition-colors hidden md:block">
+                    AI Analyze
+                </button>
+<div class="flex items-center space-x-3 text-on-surface-variant">
+<button class="hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<img alt="User profile avatar" class="w-8 h-8 rounded-full object-cover ml-2 border border-surface-container-high" data-alt="A clean, professional close-up of a user profile avatar in a light, modern corporate health app context. Soft, high-key lighting creates a bright, optimistic mood. The background is a soft, out-of-focus slate grey. The aesthetic is clean-health, reliable, and high-fidelity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC71oZKOAjudrZodeXfG0Ur8TX5qW-NLBLUZRStT_zGa9bIM90yK8KnwB9YtA6KaTjVbKY12FuoNgtFeLnIlymIxX7fJuiQFSjVEEhljUEIxt_y67AxMnI_aEJMe10Dh7yBcWZffF1SBqUSW64OojzK_hqJCwizMCja4ktbBqZsTVyjf_P-DZfrGWCwKr5rpf-9ag6ImsxxAy-FTZZtUJjjNVW9LZgEoIeN2AjNuMVGW_iXstg1xP4KgJzl2uBCz_pCc-DixKv8huUd"/>
+</div>
+</div>
+</header>
+<!-- Canvas -->
+<main class="flex-1 pt-24 pb-24 md:pb-8 px-margin-mobile md:px-margin-desktop max-w-[container-max] mx-auto w-full">
+<div class="mb-8">
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-2">AI Food Scanner</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Upload or capture a meal for precision nutritional analysis.</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- Upload / Scan Area -->
+<div class="col-span-1 lg:col-span-7 flex flex-col space-y-6">
+<!-- Estimation Mode Toggle -->
+<div class="bg-surface-container-lowest p-4 rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.04)] mb-4 border border-surface-container-high">
+    <p class="font-label-md text-label-md text-on-surface mb-3 uppercase tracking-wider">Volume Estimation Mode</p>
+    <div class="flex flex-col sm:flex-row gap-4">
+        <label class="flex items-center gap-2 cursor-pointer group">
+            <input type="radio" name="estimationMode" value="vlm" class="w-4 h-4 text-primary bg-surface-container-low border-outline-variant focus:ring-primary focus:ring-2" checked>
+            <span class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">VLM Approximation <span class="text-outline text-sm">(Default, Fast & Stable)</span></span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer group">
+            <input type="radio" name="estimationMode" value="model" class="w-4 h-4 text-primary bg-surface-container-low border-outline-variant focus:ring-primary focus:ring-2">
+            <span class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">Dedicated AI Model <span class="text-outline text-sm">(Port 5000)</span></span>
+        </label>
+    </div>
+</div>
+
+<!-- Upload Box -->
+<div id="uploadBox" class="ai-border-gradient shadow-[0px_10px_30px_rgba(0,0,0,0.08)] relative overflow-hidden group cursor-pointer h-[400px]">
+<input type="file" id="imageInput" class="hidden" accept="image/*">
+<div class="ai-inner-surface w-full h-full flex flex-col items-center justify-center p-8 transition-all group-hover:bg-surface-container-lowest">
+<!-- Placeholder for when empty (visible by default in this static mockup) -->
+<div id="emptyState" class="flex flex-col items-center text-center space-y-4">
+<div class="w-20 h-20 bg-surface-container-low rounded-full flex items-center justify-center text-primary mb-2">
+<span class="material-symbols-outlined text-4xl" data-icon="add_a_photo">add_a_photo</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Drag &amp; Drop Image</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-sm">
+                                    Upload a clear photo of your meal. Our AI will identify the components and estimate portion sizes.
+                                </p>
+<button class="mt-4 px-6 py-2 bg-surface-container text-primary rounded-full font-label-md text-label-md hover:bg-secondary-container transition-colors">
+                                    Browse Files
+                                </button>
+</div>
+<!-- Simulated Active Scan State (Hidden typically, shown for UI demonstration) -->
+<div id="scanState" class="absolute inset-0 bg-black/5 hidden">
+<div id="scanImage" class="absolute inset-x-0 top-1/4 h-[200px] bg-[url('placeholder')] bg-cover bg-center rounded-lg mx-4 overflow-hidden" data-alt="A top-down view of a healthy, beautifully plated meal consisting of a grilled chicken breast, a side of roasted sweet potatoes, and steamed broccoli on a clean white ceramic plate. The lighting is bright, natural, and high-key, emphasizing freshness and a clean-health aesthetic. The setting is a minimalist kitchen counter.">
+<div class="scanner-line absolute top-0 left-0"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- AI Verification Panel -->
+<div id="verificationPanel" class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.04)] p-6 relative overflow-hidden border border-surface-container-high hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-primary"></div>
+<div class="flex items-start space-x-4">
+<div class="bg-primary/10 p-2 rounded-lg text-primary mt-1">
+<span class="material-symbols-outlined" data-icon="psychology">psychology</span>
+</div>
+<div class="flex-1">
+<h4 class="font-label-md text-label-md text-on-surface mb-1 flex items-center">
+                                     Verification Required
+                                     <span class="ml-2 px-2 py-0.5 bg-tertiary-container/30 text-secondary rounded-full font-label-sm text-[10px]">AI Insight</span>
+</h4>
+<p id="verificationText" class="font-body-md text-body-md text-on-surface-variant mb-4">
+                                     Awaiting analysis...
+                                 </p>
+<div class="flex space-x-3">
+<button id="btnYes" class="px-4 py-2 bg-primary text-on-primary rounded-lg font-label-sm text-label-sm shadow-sm hover:opacity-90 transition-opacity">
+                                         Yes, 200g
+                                     </button>
+<button id="btnAdjust" class="px-4 py-2 bg-surface-container-low text-on-surface rounded-lg font-label-sm text-label-sm hover:bg-surface-container transition-colors">
+                                         Adjust Portion
+                                     </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Analysis & Recommendations -->
+<div class="col-span-1 lg:col-span-5 flex flex-col space-y-6">
+<div id="nutritionPanel" class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.04)] p-6 transition-all">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-6 border-b border-surface-container-high pb-4">Nutritional Breakdown</h3>
+<div class="flex items-center justify-between mb-8">
+<div>
+<span id="caloriesDisplay" class="font-headline-xl text-headline-xl text-primary font-bold">--</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">kcal est.</span>
+</div>
+<div class="flex space-x-2">
+<span class="px-3 py-1 bg-primary/10 text-primary rounded-full font-label-sm text-label-sm">Nutritional Data</span>
+</div>
+</div>
+<div class="space-y-5">
+<!-- Macro Item -->
+<div>
+<div class="flex justify-between font-label-sm text-label-sm mb-1">
+<span class="text-on-surface">Protein</span>
+<span id="proteinText" class="text-primary font-bold">--g</span>
+</div>
+<div class="w-full bg-surface-container-high rounded-full h-2">
+<div id="proteinBar" class="bg-primary h-2 rounded-full" style="width: 0%"></div>
+</div>
+</div>
+<!-- Macro Item -->
+<div>
+<div class="flex justify-between font-label-sm text-label-sm mb-1">
+<span class="text-on-surface">Carbs</span>
+<span id="carbsText" class="text-secondary font-bold">--g</span>
+</div>
+<div class="w-full bg-surface-container-high rounded-full h-2">
+<div id="carbsBar" class="bg-secondary h-2 rounded-full" style="width: 0%"></div>
+</div>
+</div>
+<!-- Macro Item -->
+<div>
+<div class="flex justify-between font-label-sm text-label-sm mb-1">
+<span class="text-on-surface">Fats</span>
+<span id="fatsText" class="text-tertiary font-bold">--g</span>
+</div>
+<div class="w-full bg-surface-container-high rounded-full h-2">
+<div id="fatsBar" class="bg-tertiary h-2 rounded-full" style="width: 0%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- AI Recommendations -->
+<div class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.04)] p-6 relative">
+<div class="absolute top-0 left-0 w-1 h-full bg-secondary"></div>
+<h4 class="font-label-md text-label-md text-on-surface mb-3 flex items-center">
+<span class="material-symbols-outlined mr-2 text-secondary" data-icon="auto_awesome">auto_awesome</span>
+                            Actionable Insights
+                        </h4>
+<ul id="recommendationsList" class="space-y-3 font-body-sm text-body-sm text-on-surface-variant">
+<li class="flex items-start">
+<span class="material-symbols-outlined text-[16px] mr-2 mt-0.5 text-secondary">info</span>
+                                Waiting for analysis to provide recommendations...
+                            </li>
+<li>
+<a class="flex items-center gap-3 p-3 rounded-lg text-on-surface-variant dark:text-surface-variant hover:text-primary hover:bg-surface-container-low dark:hover:bg-surface-container transition-colors duration-200" href="/chat">
+<span class="material-symbols-outlined" data-icon="forum">forum</span>
+<span class="font-body-md text-body-md">AI Chat</span>
+</a>
+</li>
+</ul>
+<a id="btnLogToDiary" href="/history" class="mt-5 w-full py-2 bg-surface-container-low text-primary rounded-lg font-label-sm text-label-sm hover:bg-surface-container transition-colors text-center block no-underline">
+                            View in History
+                        </a>
+</div>
+</div>
+</div>
+</main>
+</div>
+<script>
+    const uploadBox = document.getElementById('uploadBox');
+    const imageInput = document.getElementById('imageInput');
+    const emptyState = document.getElementById('emptyState');
+    const scanState = document.getElementById('scanState');
+    const scanImage = document.getElementById('scanImage');
+    const verificationPanel = document.getElementById('verificationPanel');
+    const verificationText = document.getElementById('verificationText');
+    const btnYes = document.getElementById('btnYes');
+    const btnAdjust = document.getElementById('btnAdjust');
+    const caloriesDisplay = document.getElementById('caloriesDisplay');
+    const proteinText = document.getElementById('proteinText');
+    const proteinBar = document.getElementById('proteinBar');
+    const carbsText = document.getElementById('carbsText');
+    const carbsBar = document.getElementById('carbsBar');
+    const fatsText = document.getElementById('fatsText');
+    const fatsBar = document.getElementById('fatsBar');
+    const recommendationsList = document.getElementById('recommendationsList');
+
+    const nutritionPanel = document.getElementById('nutritionPanel');
+    const recommendationContainer = document.getElementById('recommendationsList').parentElement;
+
+    let currentSegment = null;
+
+    uploadBox.addEventListener('click', () => imageInput.click());
+
+    imageInput.addEventListener('change', async (e) => {
+        if (e.target.files.length === 0) return;
+        const file = e.target.files[0];
+        
+        emptyState.classList.add('hidden');
+        scanState.classList.remove('hidden');
+        
+        const objectUrl = URL.createObjectURL(file);
+        scanImage.style.backgroundImage = `url(${objectUrl})`;
+
+        const formData = new FormData();
+        formData.append('image', file);
+        
+        const selectedMode = document.querySelector('input[name="estimationMode"]:checked').value;
+        formData.append('mode', selectedMode);
+
+        try {
+            const response = await fetch('/analyze-food', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            
+            scanState.classList.add('hidden');
+            emptyState.classList.remove('hidden');
+            
+            if (data.success && data.segments && data.segments.length > 0) {
+                currentSegment = data.segments[0];
+                const pq = currentSegment.parsed_query || {};
+                
+                verificationText.innerHTML = `I detected <strong class="text-on-surface">${pq.food_name || 'Food'}</strong>. Is this correct?`;
+                btnYes.innerText = `Yes, confirm food`;
+                verificationPanel.classList.remove('hidden');
+            } else {
+                alert("Analysis failed or no segments found.");
+            }
+        } catch(e) {
+            console.error(e);
+            alert("Error communicating with the server.");
+            scanState.classList.add('hidden');
+            emptyState.classList.remove('hidden');
+        }
+    });
+
+    btnYes.addEventListener('click', async () => {
+        if (!currentSegment) return;
+        btnYes.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Analyzing...`;
+        btnYes.disabled = true;
+        btnAdjust.disabled = true;
+        
+        // Add loading state to panels
+        nutritionPanel.classList.add('animate-pulse');
+        recommendationContainer.classList.add('animate-pulse');
+        recommendationsList.innerHTML = `
+            <li class="flex items-center text-primary font-bold">
+                <svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-primary inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                Extracting clinical insights from RAG...
+            </li>
+        `;
+        
+        const pq = currentSegment.parsed_query || {};
+        const payload = {
+            segment_id: currentSegment.segment_id,
+            food_name: pq.food_name,
+            quantity: pq.quantity || 0,
+            unit: pq.unit || "",
+            state_desc: pq.state || "",
+            image_url: currentSegment.image_url,
+            image_base64: currentSegment.image_base64
+        };
+
+        try {
+            const response = await fetch('/confirm-food', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                const calc = data.calculated_nutrition || {};
+                verificationText.innerHTML = `<span class="text-primary">Successfully verified and logged!</span>`;
+                btnYes.style.display = "none";
+                
+                caloriesDisplay.innerText = calc.calories || 0;
+                proteinText.innerText = `${calc.protein || 0}g`;
+                proteinBar.style.width = `${Math.min(((calc.protein || 0) / 50) * 100, 100)}%`;
+                
+                carbsText.innerText = `${calc.carbs || 0}g`;
+                carbsBar.style.width = `${Math.min(((calc.carbs || 0) / 100) * 100, 100)}%`;
+                
+                fatsText.innerText = `${calc.fats || 0}g`;
+                fatsBar.style.width = `${Math.min(((calc.fats || 0) / 40) * 100, 100)}%`;
+                
+                if (data.recommendations) {
+                    // Use marked.js to render markdown properly and safely
+                    if (typeof marked !== 'undefined') {
+                        let html = marked.parse(data.recommendations);
+                        // Add nice tailwind classes to standard HTML tags from marked
+                        html = html.replace(/<ul>/g, '<ul class="space-y-3 font-body-sm text-body-sm text-on-surface-variant list-none">');
+                        html = html.replace(/<li>/g, '<li class="flex items-start mb-2"><span class="material-symbols-outlined text-[16px] mr-2 mt-0.5 text-primary shrink-0">check_circle</span><span>');
+                        html = html.replace(/<\/li>/g, '</span></li>');
+                        html = html.replace(/<p>/g, '<p class="font-body-sm text-body-sm text-on-surface-variant mb-2">');
+                        html = html.replace(/<strong>/g, '<strong class="text-on-surface">');
+                        recommendationsList.innerHTML = html;
+                    } else {
+                        recommendationsList.innerHTML = `<li class="flex items-start mb-2"><span>${data.recommendations}</span></li>`;
+                    }
+                }
+            } else {
+                alert(`Failed to confirm meal: ${data.error || 'Unknown error'}`);
+                btnYes.innerText = "Try Again";
+                btnYes.disabled = false;
+                btnAdjust.disabled = false;
+            }
+        } catch(e) {
+            console.error(e);
+            alert("Error communicating with the server.");
+            btnYes.innerText = "Try Again";
+            btnYes.disabled = false;
+            btnAdjust.disabled = false;
+        } finally {
+            // Remove loading state
+            nutritionPanel.classList.remove('animate-pulse');
+            recommendationContainer.classList.remove('animate-pulse');
+        }
+    });
+
+    btnAdjust.addEventListener('click', () => {
+        if (!currentSegment) return;
+        const newFood = prompt("What food is this actually?");
+        if (newFood && newFood.trim() !== "") {
+            currentSegment.parsed_query = currentSegment.parsed_query || {};
+            currentSegment.parsed_query.food_name = newFood.trim();
+            verificationText.innerHTML = `I detected <strong class="text-on-surface">${currentSegment.parsed_query.food_name}</strong>. Is this correct?`;
+        }
+    });
+</script>
+<!-- BottomNavBar (Mobile) -->
+<nav class="fixed bottom-0 left-0 right-0 glass-panel shadow-[0px_-4px_24px_rgba(0,0,0,0.06)] md:hidden z-50 pb-safe">
+    <div class="flex justify-around items-center h-16">
+        <a class="flex flex-col items-center p-2 text-on-surface-variant hover:text-primary transition-colors" href="/">
+            <span class="material-symbols-outlined text-[24px]">dashboard</span>
+            <span class="font-label-sm text-[10px] mt-1 font-medium">Home</span>
+        </a>
+        <a class="flex flex-col items-center p-2 text-on-surface-variant hover:text-primary transition-colors" href="/history">
+            <span class="material-symbols-outlined text-[24px]">history</span>
+            <span class="font-label-sm text-[10px] mt-1 font-medium">History</span>
+        </a>
+        <div class="relative -top-5">
+            <a href="/scanner" class="flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-tr from-primary to-primary-fixed-dim text-on-primary shadow-lg shadow-primary/40 hover:scale-110 transition-transform duration-300">
+                <span class="material-symbols-outlined text-[28px]">add</span>
+            </a>
+        </div>
+        <a class="flex flex-col items-center p-2 text-on-surface-variant hover:text-primary transition-colors" href="/chat">
+            <span class="material-symbols-outlined text-[24px]">forum</span>
+            <span class="font-label-sm text-[10px] mt-1 font-medium">AI Chat</span>
+        </a>
+        <a class="flex flex-col items-center p-2 text-on-surface-variant hover:text-primary transition-colors" href="/profile">
+            <span class="material-symbols-outlined text-[24px]">person</span>
+            <span class="font-label-sm text-[10px] mt-1 font-medium">Profile</span>
+        </a>
+    </div>
+</nav>
+
+<script>
+    // Automatically highlight active navigation
+    document.addEventListener("DOMContentLoaded", () => {
+        const path = window.location.pathname;
+        const desktopLinks = document.querySelectorAll('nav.w-64 a');
+        const mobileLinks = document.querySelectorAll('nav.fixed.bottom-0 a');
+        
+        const setActive = (links, className) => {
+            links.forEach(link => {
+                link.classList.remove('text-primary', 'font-bold', 'border-primary', 'bg-secondary-container/10', 'border-r-4');
+                const href = link.getAttribute('href');
+                if (href === '/' && path === '/') {
+                    link.classList.add(className);
+                } else if (href !== '/' && path.startsWith(href)) {
+                    link.classList.add(className);
+                }
+            });
+        };
+        
+        setActive(desktopLinks, 'active-nav-item');
+        setActive(mobileLinks, 'active-nav-item-mobile');
+    });
+</script>
+
+</body></html>

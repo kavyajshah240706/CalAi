@@ -1,0 +1,40 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: calai_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgrespassword@db:5432/calai_db
+      - VOLUME_ESTIMATOR_URL=http://volume_estimator:5000
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+
+  volume_estimator:
+    build: 
+      context: ./src/volume_estimator
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+
+volumes:
+  pgdata:

@@ -1,0 +1,572 @@
+from fastapi import FastAPI, UploadFile, File, Form, Request
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse, JSONResponse
+from pydantic import BaseModel
+from typing import Optional
+import os
+from dotenv import load_dotenv
+# Load from root directory
+root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+load_dotenv(os.path.join(root_dir, ".env"), override=True)
+# Ensure the Enterprise flag is set for google-genai SDK
+os.environ["GOOGLE_GENAI_USE_ENTERPRISE"] = "True"
+import requests
+import base64
+import psycopg2
+
+from src.backend.agents.schema import GraphState
+from src.backend.agents.node1_nlp import node1_nlp_parser
+from src.backend.agents.node2_data import node2_data_retrieval
+from src.backend.agents.node3_math import node3_math_engine
+from src.backend.agents.node4_recommender import node4_recommender
+
+app = FastAPI()
+
+VOLUME_ESTIMATOR_URL = os.environ.get("VOLUME_ESTIMATOR_URL", "http://localhost:5000").rstrip("/")
+
+FRONTEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend"))
+if os.path.exists(FRONTEND_DIR):
+    app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
+
+@app.get("/")
+def serve_dashboard():
+    return FileResponse(os.path.join(FRONTEND_DIR, "nutriflow_dashboard", "code.html"))
+
+@app.get("/scanner")
+def serve_scanner():
+    return FileResponse(os.path.join(FRONTEND_DIR, "ai_nutrition_scanner", "code.html"))
+
+@app.get("/history")
+def serve_history():
+    return FileResponse(os.path.join(FRONTEND_DIR, "meal_history_logs", "code.html"))
+
+@app.get("/profile")
+def serve_profile():
+    return FileResponse(os.path.join(FRONTEND_DIR, "profile_health_goals", "code.html"))
+
+@app.post("/analyze-food")
+async def analyze_food(
+    image: UploadFile = File(...),
+    mode: str = Form("vlm")
+):
+    """Step 1: Estimate volume and extract food details (Node 1)"""
+    image_bytes = await image.read()
+    
+    if mode == "vlm":
+        try:
+            img_b64 = base64.b64encode(image_bytes).decode("utf-8")
+            user_input = "Look at this image. Identify the food. No depth model estimate is provided, use your visual judgement to estimate a realistic serving volume."
+            state = GraphState(user_input=user_input, image_base64=img_b64)
+            
+            # ONLY RUN NODE 1
+            state = node1_nlp_parser(state)
+            
+            pq = state.parsed_query or {}
+            volume_ml = pq.get("quantity", 0)
+            
+            return {
+                "success": True,
+                "segments": [{
+                    "segment_id": 0,
+                    "parsed_query": pq,
+                    "volume_ml": volume_ml,
+                    "image_url": None,
+                    "image_base64": img_b64
+                }]
+            }
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return JSONResponse(
+                status_code=500,
+                content={"success": False, "error": f"VLM analysis failed: {str(e)}"}
+            )
+    
+    # Model mode (default external port 5000 service)
+    files = {"image": (image.filename, image_bytes, image.content_type)}
+    
+    try:
+        vol_resp = requests.post(f"{VOLUME_ESTIMATOR_URL}/estimate-volume", files=files)
+        if vol_resp.status_code != 200:
+            return {"error": "Volume estimation failed"}
+    except requests.exceptions.RequestException as e:
+        return {"error": f"Volume estimation service unavailable: {e}"}
+        
+    vol_data = vol_resp.json()
+    segments = vol_data.get("segments", [])
+    final_results = []
+    
+    for seg in segments:
+        volume_ml = seg["volume"]
+        img_endpoint = vol_data.get("output_images", [])[seg["segment_id"]]
+        
+        try:
+            img_resp = requests.get(f"{VOLUME_ESTIMATOR_URL}{img_endpoint}")
+            img_b64 = base64.b64encode(img_resp.content).decode("utf-8") if img_resp.status_code == 200 else None
+        except Exception:
+            img_b64 = None
+            
+        user_input = f"Look at this image. Identify the food. The estimated volume is {volume_ml} ml."
+        state = GraphState(user_input=user_input, image_base64=img_b64)
+        
+        # ONLY RUN NODE 1
+        state = node1_nlp_parser(state)
+        
+        final_results.append({
+            "segment_id": seg["segment_id"],
+            "parsed_query": state.parsed_query,
+            "volume_ml": volume_ml,
+            "image_url": f"{VOLUME_ESTIMATOR_URL}{img_endpoint}",
+            "image_base64": img_b64
+        })
+        
+    return {
+        "success": True,
+        "segments": final_results
+    }
+
+class ConfirmFoodRequest(BaseModel):
+    segment_id: int
+    food_name: str
+    quantity: float
+    unit: str
+    state_desc: str
+    image_url: Optional[str] = None
+    image_base64: Optional[str] = None
+
+@app.post("/confirm-food")
+async def confirm_food(req: ConfirmFoodRequest):
+    """Step 2: Take confirmed details, run Nodes 2,3,4 and save to DB"""
+    try:
+        state = GraphState(
+            user_input="", 
+            image_base64=req.image_base64,
+            parsed_query={
+                "food_name": req.food_name,
+                "quantity": req.quantity,
+                "unit": req.unit,
+                "state": req.state_desc
+            }
+        )
+        
+        # Run remaining nodes with error tracking
+        print(f"[confirm-food] Running Node 2 for: {req.food_name}, qty={req.quantity} {req.unit}")
+        state = node2_data_retrieval(state)
+        print(f"[confirm-food] Node 2 done. Profile: {state.profile}")
+        
+        state = node3_math_engine(state)
+        print(f"[confirm-food] Node 3 done. Nutrition: {state.calculated_nutrition}")
+        
+        state = node4_recommender(state)
+        print(f"[confirm-food] Node 4 done. Has recommendations: {bool(state.recommendations)}")
+        
+        calc = state.calculated_nutrition or {}
+        
+        # Insert into Supabase
+        db_url = os.environ.get("DATABASE_URL")
+        if db_url and calc:
+            try:
+                conn = psycopg2.connect(db_url)
+                conn.autocommit = True
+                cursor = conn.cursor()
+                cursor.execute("""
+                    INSERT INTO meal_logs (user_id, food_name, weight_g, calories, protein, carbs, fats, image_url)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """, (
+                    "test_user", 
+                    req.food_name, 
+                    calc.get("weight_g", 0), 
+                    calc.get("calories", 0), 
+                    calc.get("protein", 0), 
+                    calc.get("carbs", 0), 
+                    calc.get("fats", 0), 
+                    req.image_url or ""
+                ))
+                cursor.close()
+                conn.close()
+            except Exception as e:
+                print(f"Error logging meal: {e}")
+
+        return {
+            "success": True,
+            "calculated_nutrition": calc,
+            "recommendations": state.recommendations
+        }
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": str(e)}
+        )
+
+class UserProfileRequest(BaseModel):
+    name: str
+    email: str
+    age: int
+    gender: str
+    height_cm: float
+    weight_kg: float
+    activity_level: str
+    daily_calorie_target: float
+    protein_goal_g: float
+    carbs_goal_g: float
+    fats_goal_g: float
+
+def get_db_connection():
+    db_url = os.environ.get("DATABASE_URL")
+    if not db_url:
+        raise ValueError("DATABASE_URL not set")
+    return psycopg2.connect(db_url)
+
+@app.get("/api/profile")
+def get_profile():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM user_profiles WHERE user_id = 'test_user';")
+        row = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        
+        if row:
+            columns = [desc[0] for desc in cursor.description]
+            profile_data = dict(zip(columns, row))
+            return {"success": True, "profile": profile_data}
+        return {"success": False, "error": "Profile not found"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.post("/api/profile")
+def update_profile(req: UserProfileRequest):
+    try:
+        conn = get_db_connection()
+        conn.autocommit = True
+        cursor = conn.cursor()
+        cursor.execute("""
+            UPDATE user_profiles 
+            SET name=%s, email=%s, age=%s, gender=%s, height_cm=%s, weight_kg=%s, 
+                activity_level=%s, daily_calorie_target=%s, protein_goal_g=%s, 
+                carbs_goal_g=%s, fats_goal_g=%s
+            WHERE user_id='test_user';
+        """, (
+            req.name, req.email, req.age, req.gender, req.height_cm, req.weight_kg,
+            req.activity_level, req.daily_calorie_target, req.protein_goal_g,
+            req.carbs_goal_g, req.fats_goal_g
+        ))
+        cursor.close()
+        conn.close()
+        return {"success": True}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.get("/api/history")
+def get_history():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id, user_id, food_name, weight_g, calories, protein, carbs, fats, image_url, created_at
+            FROM meal_logs 
+            WHERE user_id = 'test_user'
+            ORDER BY created_at DESC;
+        """)
+        rows = cursor.fetchall()
+        columns = [desc[0] for desc in cursor.description]
+        
+        meals = []
+        for row in rows:
+            meal = dict(zip(columns, row))
+            if meal["created_at"]:
+                meal["created_at"] = meal["created_at"].isoformat()
+            meals.append(meal)
+            
+        cursor.close()
+        conn.close()
+        return {"success": True, "meals": meals}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.get("/api/dashboard")
+def get_dashboard():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Get today's meals
+        from datetime import date
+        today = date.today()
+        
+        cursor.execute("""
+            SELECT id, food_name, weight_g, calories, protein, carbs, fats, image_url, created_at
+            FROM meal_logs 
+            WHERE user_id = 'test_user' AND DATE(created_at) = %s
+            ORDER BY created_at DESC;
+        """, (today,))
+        
+        rows = cursor.fetchall()
+        columns = [desc[0] for desc in cursor.description]
+        
+        today_meals = []
+        totals = {"calories": 0, "protein": 0, "carbs": 0, "fats": 0}
+        
+        for row in rows:
+            meal = dict(zip(columns, row))
+            if meal["created_at"]:
+                meal["created_at"] = meal["created_at"].isoformat()
+            today_meals.append(meal)
+            
+            totals["calories"] += meal["calories"] or 0
+            totals["protein"] += meal["protein"] or 0
+            totals["carbs"] += meal["carbs"] or 0
+            totals["fats"] += meal["fats"] or 0
+            
+        cursor.close()
+        conn.close()
+        
+        return {
+            "success": True, 
+            "today_meals": today_meals,
+            "totals": totals
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.get("/api/daily-insights")
+def get_daily_insights():
+    try:
+        import re
+        from google import genai
+        from google.genai import types
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Get Profile
+        cursor.execute("SELECT * FROM user_profiles WHERE user_id = 'test_user';")
+        prof_row = cursor.fetchone()
+        if not prof_row:
+            return {"success": False, "error": "Profile not found"}
+        prof_cols = [desc[0] for desc in cursor.description]
+        profile = dict(zip(prof_cols, prof_row))
+        
+        # Get Today's Meals
+        from datetime import date
+        today = date.today()
+        cursor.execute("""
+            SELECT food_name, calories, protein, carbs, fats
+            FROM meal_logs 
+            WHERE user_id = 'test_user' AND DATE(created_at) = %s
+        """, (today,))
+        meal_rows = cursor.fetchall()
+        meal_cols = [desc[0] for desc in cursor.description]
+        meals = [dict(zip(meal_cols, row)) for row in meal_rows]
+        
+        cursor.close()
+        conn.close()
+        
+        # Initialize Gemini 2.5 Pro
+        client = genai.Client(
+            api_key=os.environ.get("GOOGLE_API_KEY"),
+            http_options=types.HttpOptions(api_version="v1")
+        )
+        
+        prompt = f"""
+You are an elite clinical sports nutritionist AI.
+Analyze the user's daily meals against their goals.
+
+USER GOALS:
+Calories: {profile.get('daily_calorie_target')}
+Protein: {profile.get('protein_goal_g')}g
+Carbs: {profile.get('carbs_goal_g')}g
+Fats: {profile.get('fats_goal_g')}g
+
+TODAY'S MEALS:
+{meals}
+
+INSTRUCTIONS:
+1. First, think step-by-step in a <thinking> block. Calculate the totals, compare them to the goals, and identify what is missing or excessive. Ensure your math is perfectly accurate to avoid hallucinations.
+2. Then, provide your final actionable insight in an <insight> block. Keep the insight under 4 sentences, formatted cleanly with markdown. Be highly specific (e.g. "You need 40g more protein, eat 150g of chicken breast for dinner"). Do not include the thinking block in the insight block.
+
+Output format:
+<thinking>
+...
+</thinking>
+<insight>
+...
+</insight>
+"""
+        
+        response = client.models.generate_content(
+            model="gemini-3.1-pro-preview",
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                tools=[{"google_search": {}}]
+            )
+        )
+        
+        text = response.text
+        insight_match = re.search(r'<insight>(.*?)</insight>', text, re.DOTALL)
+        if insight_match:
+            insight = insight_match.group(1).strip()
+        else:
+            insight = text.strip()
+            
+        return {"success": True, "insight": insight}
+        
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+class QuickLogRequest(BaseModel):
+    text: str
+
+@app.post("/api/quick-log")
+async def quick_log(req: QuickLogRequest):
+    """Quick log a meal from a text description (no image). Runs Nodes 1-4."""
+    try:
+        state = GraphState(user_input=req.text, image_base64=None)
+        state = node1_nlp_parser(state)
+        state = node2_data_retrieval(state)
+        state = node3_math_engine(state)
+        state = node4_recommender(state)
+        
+        calc = state.calculated_nutrition or {}
+        
+        # Save to DB
+        db_url = os.environ.get("DATABASE_URL")
+        if db_url and calc:
+            try:
+                conn = psycopg2.connect(db_url)
+                conn.autocommit = True
+                cursor = conn.cursor()
+                cursor.execute("""
+                    INSERT INTO meal_logs (user_id, food_name, weight_g, calories, protein, carbs, fats, image_url)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """, (
+                    "test_user",
+                    calc.get("food", req.text),
+                    calc.get("weight_g", 0),
+                    calc.get("calories", 0),
+                    calc.get("protein", 0),
+                    calc.get("carbs", 0),
+                    calc.get("fats", 0),
+                    ""
+                ))
+                cursor.close()
+                conn.close()
+            except Exception as e:
+                print(f"Error logging quick meal: {e}")
+        
+        return {
+            "success": True,
+            "calculated_nutrition": calc,
+            "recommendations": state.recommendations
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.delete("/api/meal/{meal_id}")
+def delete_meal(meal_id: int):
+    """Delete a meal log entry by its ID."""
+    try:
+        conn = get_db_connection()
+        conn.autocommit = True
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM meal_logs WHERE id = %s AND user_id = 'test_user'", (meal_id,))
+        deleted = cursor.rowcount
+        cursor.close()
+        conn.close()
+        if deleted > 0:
+            return {"success": True, "message": f"Meal {meal_id} deleted."}
+        return {"success": False, "error": "Meal not found."}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.get("/chat")
+def serve_chat():
+    return FileResponse(os.path.join(FRONTEND_DIR, "nutriflow_chat", "code.html"))
+
+@app.get("/api/chat/history")
+def get_chat_history():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT role, message, created_at FROM chat_logs WHERE user_id = 'test_user' ORDER BY id ASC;")
+        rows = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        history = [{"role": row[0], "message": row[1], "created_at": row[2].isoformat()} for row in rows]
+        return {"success": True, "history": history}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+class ChatRequest(BaseModel):
+    message: str
+
+@app.post("/api/chat/message")
+def send_chat_message(req: ChatRequest):
+    try:
+        from google import genai
+        from google.genai import types
+        import traceback
+        
+        user_message = req.message.strip()
+        
+        conn = get_db_connection()
+        conn.autocommit = True
+        cursor = conn.cursor()
+        
+        # Save user message
+        cursor.execute("INSERT INTO chat_logs (user_id, role, message) VALUES (%s, %s, %s)", ('test_user', 'user', user_message))
+        
+        # Fetch last 10 messages for context
+        cursor.execute("SELECT role, message FROM chat_logs WHERE user_id = 'test_user' ORDER BY id DESC LIMIT 10;")
+        rows = cursor.fetchall()
+        
+        # Fetch user's recent meals for context
+        cursor.execute("SELECT food_name, weight_g, calories, protein, carbs, fats, created_at FROM meal_logs WHERE user_id = 'test_user' ORDER BY created_at DESC LIMIT 15;")
+        meals = cursor.fetchall()
+        meal_context = "User's Recent Meals Context:\n"
+        if not meals:
+            meal_context += "The user hasn't logged any meals recently.\n"
+        else:
+            for m in meals:
+                meal_context += f"- {m[6].strftime('%Y-%m-%d %H:%M')}: {m[0]} ({m[1]}g) -> {m[2]}kcal (P:{m[3]}g, C:{m[4]}g, F:{m[5]}g)\n"
+        
+        # Gemini expects chronological history
+        history = []
+        for role, msg in reversed(rows):
+            # Map role to gemini roles (user, model)
+            history.append(types.Content(role="model" if role == "assistant" else "user", parts=[types.Part.from_text(text=msg)]))
+        
+        client = genai.Client(
+            api_key=os.environ.get("GOOGLE_API_KEY"),
+            http_options=types.HttpOptions(api_version="v1")
+        )
+        
+        sys_prompt = f"You are NutriFlow AI, an elite clinical sports nutritionist chatbot. You provide helpful, evidence-based nutrition advice. Use web search if you need specific facts.\n\n{meal_context}"
+        
+        chat = client.chats.create(
+            model="gemini-3.5-flash",
+            config=types.GenerateContentConfig(
+                system_instruction=sys_prompt,
+                temperature=0.7,
+                tools=[{"google_search": {}}]
+            ),
+            history=history[:-1] # Feed history excluding the very last user message we just appended
+        )
+        
+        response = chat.send_message(user_message)
+        bot_message = response.text or "I'm sorry, I couldn't generate a response."
+        
+        # Save assistant message
+        cursor.execute("INSERT INTO chat_logs (user_id, role, message) VALUES (%s, %s, %s)", ('test_user', 'assistant', bot_message))
+        
+        cursor.close()
+        conn.close()
+        
+        return {"success": True, "response": bot_message}
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return {"success": False, "error": str(e)}

@@ -1,0 +1,35 @@
+{
+  "total_segments": 5,
+  "segments": [
+    {
+      "segment_id": 0,
+      "image_filename": "segment_0.png",
+      "volume": 2.505766239816416,
+      "image_path": "outputs/78bf2029-4800-43ec-a15f-1581dce0b472/segment_0.png"
+    },
+    {
+      "segment_id": 1,
+      "image_filename": "segment_1.png",
+      "volume": 0.6007498120691165,
+      "image_path": "outputs/78bf2029-4800-43ec-a15f-1581dce0b472/segment_1.png"
+    },
+    {
+      "segment_id": 2,
+      "image_filename": "segment_2.png",
+      "volume": 0.1704038918409716,
+      "image_path": "outputs/78bf2029-4800-43ec-a15f-1581dce0b472/segment_2.png"
+    },
+    {
+      "segment_id": 3,
+      "image_filename": "segment_3.png",
+      "volume": 0.08825344947793044,
+      "image_path": "outputs/78bf2029-4800-43ec-a15f-1581dce0b472/segment_3.png"
+    },
+    {
+      "segment_id": 4,
+      "image_filename": "segment_4.png",
+      "volume": 0.1398967599940271,
+      "image_path": "outputs/78bf2029-4800-43ec-a15f-1581dce0b472/segment_4.png"
+    }
+  ]
+}

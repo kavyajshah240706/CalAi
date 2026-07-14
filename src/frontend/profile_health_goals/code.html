@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NutriFlow - User Profile &amp; Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Manrope:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    "surface-dim": "#f1f5f9",
+                    "surface": "#f8fafc",
+                    "on-surface": "#0f172a",
+                    "on-surface-variant": "#475569",
+                    "primary": "#10b981", 
+                    "on-primary": "#ffffff",
+                    "primary-container": "#d1fae5",
+                    "on-primary-container": "#065f46",
+                    "primary-fixed": "#34d399",
+                    "primary-fixed-dim": "#059669",
+                    "secondary": "#0ea5e9",
+                    "on-secondary": "#ffffff",
+                    "secondary-container": "#e0f2fe",
+                    "on-secondary-container": "#0369a1",
+                    "background": "#f8fafc",
+                    "on-background": "#0f172a",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-low": "#f8fafc",
+                    "surface-container": "#f1f5f9",
+                    "surface-container-high": "#e2e8f0",
+                    "surface-container-highest": "#cbd5e1",
+                    "outline": "#94a3b8",
+                    "outline-variant": "#cbd5e1",
+                    "error": "#ef4444",
+                    "on-error": "#ffffff",
+                    "error-container": "#fee2e2",
+                    "on-error-container": "#991b1b",
+                    "glass": "rgba(255, 255, 255, 0.7)"
+                },
+                fontFamily: {
+                    "body-lg": ["Inter", "sans-serif"],
+                    "body-md": ["Inter", "sans-serif"],
+                    "body-sm": ["Inter", "sans-serif"],
+                    "headline-xl": ["Manrope", "sans-serif"],
+                    "headline-lg": ["Manrope", "sans-serif"],
+                    "headline-md": ["Manrope", "sans-serif"],
+                    "label-md": ["Inter", "sans-serif"],
+                    "label-sm": ["Inter", "sans-serif"]
+                },
+                animation: {
+                    'fade-in-up': 'fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                    'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                },
+                keyframes: {
+                    fadeInUp: {
+                        '0%': { opacity: '0', transform: 'translateY(20px)' },
+                        '100%': { opacity: '1', transform: 'translateY(0)' },
+                    }
+                }
+            }
+        }
+    }
+</script>
+<style>
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .active-nav-item {
+        color: #10b981 !important;
+        font-weight: 700;
+        background-color: rgba(16, 185, 129, 0.1);
+        border-right: 4px solid #10b981;
+    }
+    .active-nav-item-mobile {
+        color: #10b981 !important;
+        font-weight: 700;
+    }
+    .glass-panel {
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    .hover-lift {
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+    }
+    .hover-lift:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px -8px rgba(16, 185, 129, 0.25);
+    }
+    .scanner-line {
+        width: 100%;
+        height: 4px;
+        background: #10b981;
+        box-shadow: 0 0 15px #34d399, 0 0 30px #10b981;
+        animation: scan 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+    @keyframes scan {
+        0% { transform: translateY(0) scaleY(0.5); opacity: 0; }
+        10% { opacity: 1; scaleY(1); }
+        90% { opacity: 1; scaleY(1); }
+        100% { transform: translateY(220px) scaleY(0.5); opacity: 0; }
+    }
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+</style>
+</head>
+<body class="bg-background text-on-surface font-body-md min-h-screen antialiased flex">
+<!-- SideNavBar -->
+<nav class="h-screen w-64 fixed left-0 top-0 glass-panel shadow-[0px_4px_24px_rgba(0,0,0,0.06)] flex flex-col py-8 px-4 hidden md:flex z-50 animate-fade-in-up" style="animation-duration: 0.8s;">
+    <div class="mb-8 px-2">
+        <h1 class="font-headline-md text-headline-md font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">NutriFlow</h1>
+        <p class="font-body-sm text-body-sm text-on-surface-variant font-medium mt-1">Premium Health AI</p>
+    </div>
+    <div class="flex-1 flex flex-col space-y-2">
+        <a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all duration-300" href="/">
+            <span class="material-symbols-outlined">dashboard</span>
+            <span class="font-label-md text-label-md">Dashboard</span>
+        </a>
+        <a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all duration-300" href="/scanner">
+            <span class="material-symbols-outlined">monochrome_photos</span>
+            <span class="font-label-md text-label-md">AI Scanner</span>
+        </a>
+        <a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all duration-300" href="/history">
+            <span class="material-symbols-outlined">history</span>
+            <span class="font-label-md text-label-md">History</span>
+        </a>
+        <a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all duration-300" href="/chat">
+            <span class="material-symbols-outlined">forum</span>
+            <span class="font-label-md text-label-md">AI Chat</span>
+        </a>
+        <a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all duration-300" href="/profile">
+            <span class="material-symbols-outlined">person</span>
+            <span class="font-label-md text-label-md">Settings</span>
+        </a>
+    </div>
+    <a href="/scanner" class="w-full bg-gradient-to-r from-primary to-primary-fixed-dim text-on-primary py-3 rounded-xl shadow-lg shadow-primary/30 font-label-md text-label-md hover:scale-105 transition-all duration-300 mt-auto flex items-center justify-center no-underline">
+        <span class="material-symbols-outlined mr-2 text-[20px]">add_circle</span> Log Meal
+    </a>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 md:ml-64 flex flex-col min-h-screen">
+<!-- TopAppBar -->
+<header class="hidden md:flex justify-between items-center px-margin-desktop w-full ml-64 fixed top-0 right-0 h-16 bg-surface-bright/80 backdrop-blur-md z-30 transition-transform">
+<div class="flex items-center gap-8">
+<!-- Navigation links -->
+<nav class="flex gap-6">
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">Weekly Trends</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">Nutrition Guide</a>
+</nav>
+</div>
+<div class="flex items-center gap-6">
+<!-- Actions -->
+<div class="flex gap-4 text-on-surface-variant">
+<button class="hover:text-primary transition-colors hover:bg-surface-container-low p-2 rounded-full">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="text-primary hover:text-surface-tint transition-colors hover:bg-surface-container-low p-2 rounded-full">
+<span class="material-symbols-outlined fill" data-icon="settings">settings</span>
+</button>
+</div>
+<div class="h-6 w-px bg-outline-variant/30"></div>
+<button class="flex items-center gap-2 bg-tertiary-container/20 hover:bg-tertiary-container/30 text-primary font-label-md text-label-md py-2 px-4 rounded-full transition-colors">
+<span class="material-symbols-outlined text-[18px]">auto_awesome</span>
+                    AI Analyze
+                </button>
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-surface-container-lowest shadow-sm">
+<img alt="User profile avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a fit individual with a neutral expression, soft natural lighting, clear skin, modern corporate aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOwFt-F6_JYnZQv6QJQrhINja_-umObOpOJyRChhY-Z038AixL76mtqNogPZQwOF1XRvSK1GqpwfeLXw7pvjFMvU1mToD7gjVPnuyBY2MwaRWUq6DCFHlFKw0YEVxEymKmaeFMge5WF5JRxr_nnpL_4Mhaf2x0tONrXhDyvrIsnHqlUI1lx8EFl6cOf7UgeXyok4JP_EpH6K7cmbK0p0mO-Ct_n-VgNbmvQxsWXvB7IhL7bYxOKfCNeZEjSGIZGoNsUV67UMO8PQAp"/>
+</div>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 px-margin-mobile md:px-margin-desktop py-8 md:pt-28 pb-24 max-w-container-max mx-auto w-full">
+<header class="mb-10">
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-2">Profile &amp; Settings</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Manage your personal metrics, nutrition goals, and app preferences.</p>
+</header>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Left Column: Personal Info & Account -->
+<div class="lg:col-span-5 flex flex-col gap-8">
+<!-- Profile Card -->
+<section class="bg-surface-container-lowest rounded-xl p-6 shadow-[0px_4px_20px_rgba(0,0,0,0.04)] relative overflow-hidden group">
+<div class="absolute top-0 left-0 w-1 h-full bg-primary"></div>
+<div class="flex items-start gap-6">
+<div class="relative">
+<div class="w-20 h-20 rounded-full overflow-hidden border-4 border-surface shadow-sm">
+<img alt="Profile Picture" class="w-full h-full object-cover" data-alt="A professional headshot of a fit individual with a neutral expression, soft natural lighting, clear skin, modern corporate aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCieyU5JFFCwU9qCPID9eIsOCuJIXKWg9lRfaDNY24rl67Mx6whXEq1eqtgvtc9T3cNcJOFt-FDu6qMmSKSX0EAPjoce1Bn4VoV2WKwpU7pmyYdTZKOvvsPldeDTijEPBYGp02uSRPoEFctyl-QGNJB4Yta-QXg0amvdX54WNUbmcx0uKRTYE0Nfd20mwq51sV9-RXFrfumgPYow4Xy7bQswN84QNuTcC8sb8SprZCfhQi1vHIi_uMceD_xX65SMkmvTz4drI4qwlHh"/>
+</div>
+<button class="absolute bottom-0 right-0 bg-primary text-on-primary rounded-full p-1.5 shadow-md hover:bg-surface-tint transition-colors">
+<span class="material-symbols-outlined text-[14px]">edit</span>
+</button>
+</div>
+<div class="flex-1">
+<h3 id="profileName" class="font-headline-md text-headline-md text-on-surface">User Name</h3>
+<p id="profileEmail" class="font-body-sm text-body-sm text-on-surface-variant mb-4">user@example.com</p>
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-container/20 text-on-primary-container font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">verified</span>
+                                    Premium Member
+                                </span>
+</div>
+</div>
+</section>
+<!-- Personal Information Form -->
+<section class="bg-surface-container-lowest rounded-xl p-8 shadow-[0px_4px_20px_rgba(0,0,0,0.04)] relative">
+<div class="absolute top-0 left-0 w-1 h-full bg-secondary"></div>
+<h4 class="font-headline-md text-headline-md text-on-surface mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">vital_signs</span>
+                            Personal Metrics
+                        </h4>
+<form id="profileForm" class="space-y-6">
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant block">Age</label>
+<input id="inputAge" class="w-full bg-[#F1F5F9] border-transparent rounded-lg px-4 py-3 font-body-md text-on-surface focus:bg-surface-container-lowest focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none" type="number" value=""/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant block">Gender</label>
+<select id="inputGender" class="w-full bg-[#F1F5F9] border-transparent rounded-lg px-4 py-3 font-body-md text-on-surface focus:bg-surface-container-lowest focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none appearance-none">
+<option value="Male">Male</option>
+<option value="Female">Female</option>
+<option value="Other">Other</option>
+</select>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant block">Height (cm)</label>
+<input id="inputHeight" class="w-full bg-[#F1F5F9] border-transparent rounded-lg px-4 py-3 font-body-md text-on-surface focus:bg-surface-container-lowest focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none" type="number" value=""/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant block">Current Weight (kg)</label>
+<input id="inputWeight" class="w-full bg-[#F1F5F9] border-transparent rounded-lg px-4 py-3 font-body-md text-on-surface focus:bg-surface-container-lowest focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none" type="number" step="0.1" value=""/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant block">Activity Level</label>
+<select id="inputActivity" class="w-full bg-[#F1F5F9] border-transparent rounded-lg px-4 py-3 font-body-md text-on-surface focus:bg-surface-container-lowest focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none appearance-none">
+<option value="Sedentary">Sedentary</option>
+<option value="Lightly Active">Lightly Active</option>
+<option value="Moderately Active">Moderately Active</option>
+<option value="Very Active">Very Active</option>
+<option value="Extra Active">Extra Active</option>
+</select>
+</div>
+<div class="pt-4 flex justify-end">
+<button id="saveProfileBtn" class="bg-tertiary-container/20 text-primary hover:bg-tertiary-container/30 font-label-md text-label-md py-2.5 px-6 rounded-lg transition-colors" type="button">
+                                    Save Changes
+                                </button>
+</div>
+</form>
+</section>
+</div>
+<!-- Right Column: Goals & Progress -->
+<div class="lg:col-span-7 flex flex-col gap-8">
+<!-- AI Insight Command Surface -->
+<section class="bg-surface-bright/60 backdrop-blur-md rounded-xl p-[2px] shadow-[0px_10px_30px_rgba(0,0,0,0.06)] bg-gradient-to-br from-primary via-secondary to-surface relative overflow-hidden">
+<div class="bg-surface-container-lowest rounded-[10px] p-6 h-full relative z-10 flex flex-col sm:flex-row gap-6 items-center">
+<div class="w-16 h-16 rounded-full bg-primary-container/20 flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[32px] text-primary">psychology</span>
+</div>
+<div>
+<h4 class="font-label-md text-label-md text-primary mb-1 uppercase tracking-wider">AI Insight</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Based on your recent logs, increasing your protein intake by 15g during breakfast could improve your afternoon energy levels by 20%.</p>
+<button id="btnAdjustGoals" class="mt-3 text-primary font-label-md text-label-md hover:underline flex items-center gap-1">
+                                    Adjust Macro Goals <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Nutrition Goals Bento -->
+<section class="bg-surface-container-lowest rounded-xl p-8 shadow-[0px_4px_20px_rgba(0,0,0,0.04)] relative">
+<div class="absolute top-0 left-0 w-1 h-full bg-tertiary"></div>
+<div class="flex justify-between items-center mb-6">
+<h4 class="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary">track_changes</span>
+                                Nutrition Goals
+                            </h4>
+<button class="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-surface-container-low">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+<!-- Calories -->
+<div class="col-span-1 sm:col-span-3 bg-[#F1F5F9] rounded-xl p-6 flex justify-between items-center">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Daily Calorie Target</p>
+<div class="flex items-baseline gap-2">
+<input id="inputCalTarget" type="number" class="font-headline-xl text-headline-xl text-on-surface bg-transparent border-none outline-none w-28 p-0" value="0" />
+<span class="font-body-sm text-body-sm text-on-surface-variant">kcal</span>
+</div>
+</div>
+<div class="w-16 h-16 relative">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 36 36">
+<path class="text-surface-container-high" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3"></path>
+<path class="text-primary" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="100, 100" stroke-width="3"></path>
+</svg>
+</div>
+</div>
+<!-- Macros -->
+<div class="bg-surface rounded-xl p-5 border border-outline-variant/30 flex flex-col items-center justify-center text-center">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-2">Protein</p>
+<div class="flex items-baseline"><input id="inputProteinGoal" type="number" class="font-headline-lg text-headline-lg text-secondary bg-transparent border-none outline-none w-16 text-center p-0" value="0" /><span class="text-secondary">g</span></div>
+</div>
+<div class="bg-surface rounded-xl p-5 border border-outline-variant/30 flex flex-col items-center justify-center text-center">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-2">Carbs</p>
+<div class="flex items-baseline"><input id="inputCarbsGoal" type="number" class="font-headline-lg text-headline-lg text-[#0ea5e9] bg-transparent border-none outline-none w-16 text-center p-0" value="0" /><span class="text-[#0ea5e9]">g</span></div>
+</div>
+<div class="bg-surface rounded-xl p-5 border border-outline-variant/30 flex flex-col items-center justify-center text-center">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-2">Fats</p>
+<div class="flex items-baseline"><input id="inputFatsGoal" type="number" class="font-headline-lg text-headline-lg text-[#f59e0b] bg-transparent border-none outline-none w-16 text-center p-0" value="0" /><span class="text-[#f59e0b]">g</span></div>
+</div>
+</div>
+</section>
+<!-- Progress Chart Placeholder (Glassmorphism card) -->
+<section class="bg-surface-container-lowest rounded-xl p-8 shadow-[0px_4px_20px_rgba(0,0,0,0.04)]">
+<div class="flex justify-between items-center mb-6">
+<div>
+<h4 class="font-headline-md text-headline-md text-on-surface">Weight Consistency</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Last 30 days progress</p>
+</div>
+<select class="bg-surface border-none text-on-surface-variant font-label-sm rounded-lg focus:ring-0 cursor-pointer">
+<option>Weight</option>
+<option>Calories</option>
+</select>
+</div>
+<div class="w-full h-64 bg-surface rounded-lg border border-outline-variant/20 flex items-center justify-center relative overflow-hidden">
+<!-- Simple SVG Line Chart representation -->
+<svg class="w-full h-full text-surface-container-high" preserveaspectratio="none" viewbox="0 0 100 100">
+<!-- Grid lines -->
+<line stroke="currentColor" stroke-dasharray="2" stroke-width="0.5" x1="0" x2="100" y1="25" y2="25"></line>
+<line stroke="currentColor" stroke-dasharray="2" stroke-width="0.5" x1="0" x2="100" y1="50" y2="50"></line>
+<line stroke="currentColor" stroke-dasharray="2" stroke-width="0.5" x1="0" x2="100" y1="75" y2="75"></line>
+<!-- Line chart -->
+<path class="drop-shadow-sm" d="M0,80 L10,75 L20,78 L30,65 L40,68 L50,55 L60,50 L70,45 L80,48 L90,35 L100,30" fill="none" stroke="#006c49" stroke-width="2"></path>
+<!-- Area under line -->
+<path d="M0,80 L10,75 L20,78 L30,65 L40,68 L50,55 L60,50 L70,45 L80,48 L90,35 L100,30 L100,100 L0,100 Z" fill="url(#gradient)" opacity="0.1"></path>
+<defs>
+<lineargradient id="gradient" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#006c49"></stop>
+<stop offset="100%" stop-color="#ffffff"></stop>
+</lineargradient>
+</defs>
+<!-- Data points -->
+<circle cx="30" cy="65" fill="#006c49" r="2"></circle>
+<circle cx="60" cy="50" fill="#006c49" r="2"></circle>
+<circle cx="90" cy="35" fill="#006c49" r="2"></circle>
+</svg>
+</div>
+</section>
+</div>
+</div>
+</main>
+</div>
+<script>
+    let currentProfile = {};
+
+    async function loadProfile() {
+        try {
+            const res = await fetch('/api/profile');
+            const data = await res.json();
+            if (data.success && data.profile) {
+                const p = data.profile;
+                currentProfile = p;
+                
+                document.getElementById('profileName').innerText = p.name;
+                document.getElementById('profileEmail').innerText = p.email;
+                
+                document.getElementById('inputAge').value = p.age;
+                document.getElementById('inputGender').value = p.gender;
+                document.getElementById('inputHeight').value = p.height_cm;
+                document.getElementById('inputWeight').value = p.weight_kg;
+                document.getElementById('inputActivity').value = p.activity_level;
+                
+                document.getElementById('inputCalTarget').value = Math.round(p.daily_calorie_target);
+                document.getElementById('inputProteinGoal').value = Math.round(p.protein_goal_g);
+                document.getElementById('inputCarbsGoal').value = Math.round(p.carbs_goal_g);
+                document.getElementById('inputFatsGoal').value = Math.round(p.fats_goal_g);
+            }
+        } catch(e) {
+            console.error('Error fetching profile:', e);
+        }
+    }
+
+    document.getElementById('saveProfileBtn').addEventListener('click', async () => {
+        const btn = document.getElementById('saveProfileBtn');
+        btn.innerText = 'Saving...';
+        btn.disabled = true;
+        
+        const payload = {
+            name: currentProfile.name,
+            email: currentProfile.email,
+            age: parseInt(document.getElementById('inputAge').value),
+            gender: document.getElementById('inputGender').value,
+            height_cm: parseFloat(document.getElementById('inputHeight').value),
+            weight_kg: parseFloat(document.getElementById('inputWeight').value),
+            activity_level: document.getElementById('inputActivity').value,
+            daily_calorie_target: parseFloat(document.getElementById('inputCalTarget').value),
+            protein_goal_g: parseFloat(document.getElementById('inputProteinGoal').value),
+            carbs_goal_g: parseFloat(document.getElementById('inputCarbsGoal').value),
+            fats_goal_g: parseFloat(document.getElementById('inputFatsGoal').value)
+        };
+
+        try {
+            const res = await fetch('/api/profile', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (data.success) {
+                btn.innerText = 'Saved!';
+                setTimeout(() => { btn.innerText = 'Save Changes'; btn.disabled = false; }, 2000);
+            } else {
+                alert('Failed to save: ' + data.error);
+                btn.innerText = 'Save Changes'; btn.disabled = false;
+            }
+        } catch(e) {
+            console.error(e);
+            alert('Error saving profile');
+            btn.innerText = 'Save Changes'; btn.disabled = false;
+        }
+    });
+
+    // Adjust Macro Goals button scrolls to the goals section
+    document.getElementById('btnAdjustGoals')?.addEventListener('click', () => {
+        document.getElementById('inputCalTarget')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => document.getElementById('inputCalTarget')?.focus(), 500);
+    });
+
+    document.addEventListener('DOMContentLoaded', loadProfile);
+</script>
+<!-- BottomNavBar (Mobile) -->
+<nav class="fixed bottom-0 left-0 right-0 glass-panel shadow-[0px_-4px_24px_rgba(0,0,0,0.06)] md:hidden z-50 pb-safe">
+    <div class="flex justify-around items-center h-16">
+        <a class="flex flex-col items-center p-2 text-on-surface-variant hover:text-primary transition-colors" href="/">
+            <span class="material-symbols-outlined text-[24px]">dashboard</span>
+            <span class="font-label-sm text-[10px] mt-1 font-medium">Home</span>
+        </a>
+        <a class="flex flex-col items-center p-2 text-on-surface-variant hover:text-primary transition-colors" href="/history">
+            <span class="material-symbols-outlined text-[24px]">history</span>
+            <span class="font-label-sm text-[10px] mt-1 font-medium">History</span>
+        </a>
+        <div class="relative -top-5">
+            <a href="/scanner" class="flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-tr from-primary to-primary-fixed-dim text-on-primary shadow-lg shadow-primary/40 hover:scale-110 transition-transform duration-300">
+                <span class="material-symbols-outlined text-[28px]">add</span>
+            </a>
+        </div>
+        <a class="flex flex-col items-center p-2 text-on-surface-variant hover:text-primary transition-colors" href="/chat">
+            <span class="material-symbols-outlined text-[24px]">forum</span>
+            <span class="font-label-sm text-[10px] mt-1 font-medium">AI Chat</span>
+        </a>
+        <a class="flex flex-col items-center p-2 text-on-surface-variant hover:text-primary transition-colors" href="/profile">
+            <span class="material-symbols-outlined text-[24px]">person</span>
+            <span class="font-label-sm text-[10px] mt-1 font-medium">Profile</span>
+        </a>
+    </div>
+</nav>
+
+<script>
+    // Automatically highlight active navigation
+    document.addEventListener("DOMContentLoaded", () => {
+        const path = window.location.pathname;
+        const desktopLinks = document.querySelectorAll('nav.w-64 a');
+        const mobileLinks = document.querySelectorAll('nav.fixed.bottom-0 a');
+        
+        const setActive = (links, className) => {
+            links.forEach(link => {
+                link.classList.remove('text-primary', 'font-bold', 'border-primary', 'bg-secondary-container/10', 'border-r-4');
+                const href = link.getAttribute('href');
+                if (href === '/' && path === '/') {
+                    link.classList.add(className);
+                } else if (href !== '/' && path.startsWith(href)) {
+                    link.classList.add(className);
+                }
+            });
+        };
+        
+        setActive(desktopLinks, 'active-nav-item');
+        setActive(mobileLinks, 'active-nav-item-mobile');
+    });
+</script>
+
+</body></html>
