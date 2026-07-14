@@ -16,9 +16,8 @@ COPY requirements.txt .
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the entire src directory and env
+# Copy the entire src directory
 COPY src/ ./src/
-COPY .env .
 
 # Set Python path so src modules can be resolved
 ENV PYTHONPATH=/app
