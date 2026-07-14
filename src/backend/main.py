@@ -264,7 +264,7 @@ def get_profile():
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute(f"SELECT * FROM user_profiles WHERE user_id = {user_id};")
+        cursor.execute("SELECT * FROM user_profiles WHERE user_id = %s;", (user_id,))
         row = cursor.fetchone()
         cursor.close()
         conn.close()
@@ -384,7 +384,7 @@ def get_daily_insights(request: Request):
         cursor = conn.cursor()
         
         # Get Profile
-        cursor.execute(f"SELECT * FROM user_profiles WHERE user_id = {user_id};")
+        cursor.execute("SELECT * FROM user_profiles WHERE user_id = %s;", (user_id,))
         prof_row = cursor.fetchone()
         if not prof_row:
             return {"success": False, "error": "Profile not found"}
@@ -537,7 +537,7 @@ def get_chat_history(request: Request):
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute(f"SELECT role, message, created_at FROM chat_logs WHERE user_id = {user_id} ORDER BY id ASC;")
+        cursor.execute("SELECT role, message, created_at FROM chat_logs WHERE user_id = %s ORDER BY id ASC;", (user_id,))
         rows = cursor.fetchall()
         cursor.close()
         conn.close()
@@ -555,7 +555,6 @@ def send_chat_message(request: Request, req: ChatRequest):
     try:
         from google import genai
         from google.genai import types
-        import traceback
         
         user_message = req.message.strip()
         
@@ -564,51 +563,65 @@ def send_chat_message(request: Request, req: ChatRequest):
         cursor = conn.cursor()
         
         # Save user message
-        cursor.execute("INSERT INTO chat_logs (user_id, role, message) VALUES (%s, %s, %s)", ({user_id}, 'user', user_message))
+        cursor.execute("INSERT INTO chat_logs (user_id, role, message) VALUES (%s, %s, %s)", (user_id, 'user', user_message))
         
-        # Fetch last 10 messages for context
-        cursor.execute(f"SELECT role, message FROM chat_logs WHERE user_id = {user_id} ORDER BY id DESC LIMIT 10;")
+        # Fetch history
+        cursor.execute("SELECT role, message FROM chat_logs WHERE user_id = %s ORDER BY id DESC LIMIT 10;", (user_id,))
         rows = cursor.fetchall()
+        cursor.close()
+        conn.close()
         
-        # Fetch user's recent meals for context
-        cursor.execute(f"SELECT food_name, weight_g, calories, protein, carbs, fats, created_at FROM meal_logs WHERE user_id = {user_id} ORDER BY created_at DESC LIMIT 15;")
-        meals = cursor.fetchall()
-        meal_context = "User's Recent Meals Context:\n"
-        if not meals:
-            meal_context += "The user hasn't logged any meals recently.\n"
-        else:
-            for m in meals:
-                meal_context += f"- {m[6].strftime('%Y-%m-%d %H:%M')}: {m[0]} ({m[1]}g) -> {m[2]}kcal (P:{m[3]}g, C:{m[4]}g, F:{m[5]}g)\n"
-        
-        # Gemini expects chronological history
         history = []
         for role, msg in reversed(rows):
-            # Map role to gemini roles (user, model)
             history.append(types.Content(role="model" if role == "assistant" else "user", parts=[types.Part.from_text(text=msg)]))
+            
+        def get_recent_meals_tool() -> str:
+            """Gets the user's logged meals for the day to analyze their intake."""
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("SELECT food_name, weight_g, calories, protein, carbs, fats, created_at FROM meal_logs WHERE user_id = %s ORDER BY created_at DESC LIMIT 15;", (user_id,))
+            meals = cursor.fetchall()
+            cursor.close()
+            conn.close()
+            if not meals: return "No meals logged recently."
+            return "\\n".join([f"- {m[6].strftime('%Y-%m-%d %H:%M')}: {m[0]} ({m[1]}g) -> {m[2]}kcal (P:{m[3]}g, C:{m[4]}g, F:{m[5]}g)" for m in meals])
+            
+        def get_user_profile_tool() -> str:
+            """Gets the user's specific health goals, including daily calorie, protein, carbs, and fats targets."""
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("SELECT daily_calorie_target, protein_goal_g, carbs_goal_g, fats_goal_g FROM user_profiles WHERE user_id = %s;", (user_id,))
+            prof = cursor.fetchone()
+            cursor.close()
+            conn.close()
+            if not prof: return "No profile found."
+            return f"Goals: {prof[0]} kcal, {prof[1]}g Protein, {prof[2]}g Carbs, {prof[3]}g Fats."
         
         client = genai.Client(
             api_key=os.environ.get("GOOGLE_API_KEY"),
             http_options=types.HttpOptions(api_version="v1")
         )
         
-        sys_prompt = f"You are NutriFlow AI, an elite clinical sports nutritionist chatbot. You provide helpful, evidence-based nutrition advice. Use web search if you need specific facts.\n\n{meal_context}"
+        sys_prompt = "You are NutriFlow AI, an elite clinical sports nutritionist. You are autonomous. Call get_user_profile_tool to check goals, or get_recent_meals_tool to see what they ate today if they ask about it. You can also use google_search to look up external nutritional facts."
         
         chat = client.chats.create(
             model="gemini-3.5-flash",
             config=types.GenerateContentConfig(
                 system_instruction=sys_prompt,
-                temperature=0.7,
-                tools=[{"google_search": {}}]
+                temperature=0.4,
+                tools=[get_recent_meals_tool, get_user_profile_tool, {"google_search": {}}]
             ),
-            history=history[:-1] # Feed history excluding the very last user message we just appended
+            history=history[:-1] if len(history) > 0 else None
         )
         
         response = chat.send_message(user_message)
         bot_message = response.text or "I'm sorry, I couldn't generate a response."
         
         # Save assistant message
-        cursor.execute("INSERT INTO chat_logs (user_id, role, message) VALUES (%s, %s, %s)", ({user_id}, 'assistant', bot_message))
-        
+        conn = get_db_connection()
+        conn.autocommit = True
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO chat_logs (user_id, role, message) VALUES (%s, %s, %s)", (user_id, 'assistant', bot_message))
         cursor.close()
         conn.close()
         
@@ -617,3 +630,4 @@ def send_chat_message(request: Request, req: ChatRequest):
         import traceback
         traceback.print_exc()
         return {"success": False, "error": str(e)}
+
