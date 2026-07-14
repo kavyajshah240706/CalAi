@@ -1,6 +1,6 @@
-from fastapi import FastAPI, UploadFile, File, Form, Request
+from fastapi import FastAPI, UploadFile, File, Form, Request, Depends, HTTPException
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from pydantic import BaseModel
 from typing import Optional
 import os
@@ -22,6 +22,36 @@ from src.backend.agents.node4_recommender import node4_recommender
 
 app = FastAPI()
 
+class LoginRequest(BaseModel):
+    password: str
+
+def check_ui_auth(request: Request):
+    token = request.cookies.get("session_token")
+    if not token:
+        return RedirectResponse(url="/login", status_code=303)
+    return None
+
+def get_api_user(request: Request):
+    token = request.cookies.get("session_token")
+    if not token:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    return token
+
+@app.get("/login")
+def serve_login():
+    return FileResponse(os.path.join(FRONTEND_DIR, "login", "code.html"))
+
+@app.post("/api/login")
+def login(req: LoginRequest):
+    # Default to admin123 if not set in environment
+    correct = os.environ.get("ADMIN_PASSWORD", "admin123")
+    if req.password == correct:
+        res = JSONResponse({"success": True})
+        res.set_cookie("session_token", "admin_user", httponly=True, max_age=86400*30)
+        return res
+    return JSONResponse({"success": False, "error": "Invalid password"}, status_code=401)
+
+
 VOLUME_ESTIMATOR_URL = os.environ.get("VOLUME_ESTIMATOR_URL", "http://localhost:5000").rstrip("/")
 
 FRONTEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend"))
@@ -29,26 +59,36 @@ if os.path.exists(FRONTEND_DIR):
     app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
 
 @app.get("/")
-def serve_dashboard():
+def serve_dashboard(request: Request):
+    auth = check_ui_auth(request)
+    if auth: return auth
     return FileResponse(os.path.join(FRONTEND_DIR, "nutriflow_dashboard", "code.html"))
 
 @app.get("/scanner")
-def serve_scanner():
+def serve_scanner(request: Request):
+    auth = check_ui_auth(request)
+    if auth: return auth
     return FileResponse(os.path.join(FRONTEND_DIR, "ai_nutrition_scanner", "code.html"))
 
 @app.get("/history")
-def serve_history():
+def serve_history(request: Request):
+    auth = check_ui_auth(request)
+    if auth: return auth
     return FileResponse(os.path.join(FRONTEND_DIR, "meal_history_logs", "code.html"))
 
 @app.get("/profile")
-def serve_profile():
+def serve_profile(request: Request):
+    auth = check_ui_auth(request)
+    if auth: return auth
     return FileResponse(os.path.join(FRONTEND_DIR, "profile_health_goals", "code.html"))
 
 @app.post("/analyze-food")
 async def analyze_food(
+    request: Request,
     image: UploadFile = File(...),
     mode: str = Form("vlm")
 ):
+    user_id = get_api_user(request)
     """Step 1: Estimate volume and extract food details (Node 1)"""
     image_bytes = await image.read()
     
@@ -173,7 +213,7 @@ async def confirm_food(req: ConfirmFoodRequest):
                     INSERT INTO meal_logs (user_id, food_name, weight_g, calories, protein, carbs, fats, image_url)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 """, (
-                    "test_user", 
+                    user_id, 
                     req.food_name, 
                     calc.get("weight_g", 0), 
                     calc.get("calories", 0), 
@@ -224,7 +264,7 @@ def get_profile():
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM user_profiles WHERE user_id = 'test_user';")
+        cursor.execute(f"SELECT * FROM user_profiles WHERE user_id = {user_id};")
         row = cursor.fetchone()
         cursor.close()
         conn.close()
@@ -243,12 +283,12 @@ def update_profile(req: UserProfileRequest):
         conn = get_db_connection()
         conn.autocommit = True
         cursor = conn.cursor()
-        cursor.execute("""
+        cursor.execute(f"""
             UPDATE user_profiles 
             SET name=%s, email=%s, age=%s, gender=%s, height_cm=%s, weight_kg=%s, 
                 activity_level=%s, daily_calorie_target=%s, protein_goal_g=%s, 
                 carbs_goal_g=%s, fats_goal_g=%s
-            WHERE user_id='test_user';
+            WHERE user_id={user_id};
         """, (
             req.name, req.email, req.age, req.gender, req.height_cm, req.weight_kg,
             req.activity_level, req.daily_calorie_target, req.protein_goal_g,
@@ -265,10 +305,10 @@ def get_history():
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("""
+        cursor.execute(f"""
             SELECT id, user_id, food_name, weight_g, calories, protein, carbs, fats, image_url, created_at
             FROM meal_logs 
-            WHERE user_id = 'test_user'
+            WHERE user_id = {user_id}
             ORDER BY created_at DESC;
         """)
         rows = cursor.fetchall()
@@ -297,10 +337,10 @@ def get_dashboard():
         from datetime import date
         today = date.today()
         
-        cursor.execute("""
+        cursor.execute(f"""
             SELECT id, food_name, weight_g, calories, protein, carbs, fats, image_url, created_at
             FROM meal_logs 
-            WHERE user_id = 'test_user' AND DATE(created_at) = %s
+            WHERE user_id = {user_id} AND DATE(created_at) = %s
             ORDER BY created_at DESC;
         """, (today,))
         
@@ -333,7 +373,8 @@ def get_dashboard():
         return {"success": False, "error": str(e)}
 
 @app.get("/api/daily-insights")
-def get_daily_insights():
+def get_daily_insights(request: Request):
+    user_id = get_api_user(request)
     try:
         import re
         from google import genai
@@ -343,7 +384,7 @@ def get_daily_insights():
         cursor = conn.cursor()
         
         # Get Profile
-        cursor.execute("SELECT * FROM user_profiles WHERE user_id = 'test_user';")
+        cursor.execute(f"SELECT * FROM user_profiles WHERE user_id = {user_id};")
         prof_row = cursor.fetchone()
         if not prof_row:
             return {"success": False, "error": "Profile not found"}
@@ -353,10 +394,10 @@ def get_daily_insights():
         # Get Today's Meals
         from datetime import date
         today = date.today()
-        cursor.execute("""
+        cursor.execute(f"""
             SELECT food_name, calories, protein, carbs, fats
             FROM meal_logs 
-            WHERE user_id = 'test_user' AND DATE(created_at) = %s
+            WHERE user_id = {user_id} AND DATE(created_at) = %s
         """, (today,))
         meal_rows = cursor.fetchall()
         meal_cols = [desc[0] for desc in cursor.description]
@@ -421,7 +462,8 @@ class QuickLogRequest(BaseModel):
     text: str
 
 @app.post("/api/quick-log")
-async def quick_log(req: QuickLogRequest):
+async def quick_log(request: Request, req: QuickLogRequest):
+    user_id = get_api_user(request)
     """Quick log a meal from a text description (no image). Runs Nodes 1-4."""
     try:
         state = GraphState(user_input=req.text, image_base64=None)
@@ -443,7 +485,7 @@ async def quick_log(req: QuickLogRequest):
                     INSERT INTO meal_logs (user_id, food_name, weight_g, calories, protein, carbs, fats, image_url)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 """, (
-                    "test_user",
+                    user_id,
                     calc.get("food", req.text),
                     calc.get("weight_g", 0),
                     calc.get("calories", 0),
@@ -466,13 +508,14 @@ async def quick_log(req: QuickLogRequest):
         return {"success": False, "error": str(e)}
 
 @app.delete("/api/meal/{meal_id}")
-def delete_meal(meal_id: int):
+def delete_meal(request: Request, meal_id: int):
+    user_id = get_api_user(request)
     """Delete a meal log entry by its ID."""
     try:
         conn = get_db_connection()
         conn.autocommit = True
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM meal_logs WHERE id = %s AND user_id = 'test_user'", (meal_id,))
+        cursor.execute(f"DELETE FROM meal_logs WHERE id = %s AND user_id = {user_id}", (meal_id,))
         deleted = cursor.rowcount
         cursor.close()
         conn.close()
@@ -483,15 +526,18 @@ def delete_meal(meal_id: int):
         return {"success": False, "error": str(e)}
 
 @app.get("/chat")
-def serve_chat():
+def serve_chat(request: Request):
+    auth = check_ui_auth(request)
+    if auth: return auth
     return FileResponse(os.path.join(FRONTEND_DIR, "nutriflow_chat", "code.html"))
 
 @app.get("/api/chat/history")
-def get_chat_history():
+def get_chat_history(request: Request):
+    user_id = get_api_user(request)
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT role, message, created_at FROM chat_logs WHERE user_id = 'test_user' ORDER BY id ASC;")
+        cursor.execute(f"SELECT role, message, created_at FROM chat_logs WHERE user_id = {user_id} ORDER BY id ASC;")
         rows = cursor.fetchall()
         cursor.close()
         conn.close()
@@ -504,7 +550,8 @@ class ChatRequest(BaseModel):
     message: str
 
 @app.post("/api/chat/message")
-def send_chat_message(req: ChatRequest):
+def send_chat_message(request: Request, req: ChatRequest):
+    user_id = get_api_user(request)
     try:
         from google import genai
         from google.genai import types
@@ -517,14 +564,14 @@ def send_chat_message(req: ChatRequest):
         cursor = conn.cursor()
         
         # Save user message
-        cursor.execute("INSERT INTO chat_logs (user_id, role, message) VALUES (%s, %s, %s)", ('test_user', 'user', user_message))
+        cursor.execute("INSERT INTO chat_logs (user_id, role, message) VALUES (%s, %s, %s)", ({user_id}, 'user', user_message))
         
         # Fetch last 10 messages for context
-        cursor.execute("SELECT role, message FROM chat_logs WHERE user_id = 'test_user' ORDER BY id DESC LIMIT 10;")
+        cursor.execute(f"SELECT role, message FROM chat_logs WHERE user_id = {user_id} ORDER BY id DESC LIMIT 10;")
         rows = cursor.fetchall()
         
         # Fetch user's recent meals for context
-        cursor.execute("SELECT food_name, weight_g, calories, protein, carbs, fats, created_at FROM meal_logs WHERE user_id = 'test_user' ORDER BY created_at DESC LIMIT 15;")
+        cursor.execute(f"SELECT food_name, weight_g, calories, protein, carbs, fats, created_at FROM meal_logs WHERE user_id = {user_id} ORDER BY created_at DESC LIMIT 15;")
         meals = cursor.fetchall()
         meal_context = "User's Recent Meals Context:\n"
         if not meals:
@@ -560,7 +607,7 @@ def send_chat_message(req: ChatRequest):
         bot_message = response.text or "I'm sorry, I couldn't generate a response."
         
         # Save assistant message
-        cursor.execute("INSERT INTO chat_logs (user_id, role, message) VALUES (%s, %s, %s)", ('test_user', 'assistant', bot_message))
+        cursor.execute("INSERT INTO chat_logs (user_id, role, message) VALUES (%s, %s, %s)", ({user_id}, 'assistant', bot_message))
         
         cursor.close()
         conn.close()
