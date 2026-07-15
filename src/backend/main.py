@@ -175,7 +175,8 @@ class ConfirmFoodRequest(BaseModel):
     image_base64: Optional[str] = None
 
 @app.post("/confirm-food")
-async def confirm_food(req: ConfirmFoodRequest):
+async def confirm_food(request: Request, req: ConfirmFoodRequest):
+    user_id = get_api_user(request)
     """Step 2: Take confirmed details, run Nodes 2,3,4 and save to DB"""
     try:
         state = GraphState(

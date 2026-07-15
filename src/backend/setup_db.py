@@ -105,6 +105,14 @@ def setup_database():
                 ('test_user', 'Alex Mercer', 'alex.mercer@example.com', 32, 'Male', 180, 75.5, 'Moderately Active', 2450, 160, 245, 82);
             """)
 
+        # Enable Row Level Security (RLS) on all public tables to prevent Supabase warnings
+        print("Enabling Row Level Security (RLS) on public tables...")
+        for table in ["food_macros", "meal_logs", "user_profiles", "chat_logs", "langchain_pg_collection", "langchain_pg_embedding"]:
+            try:
+                cursor.execute(f"ALTER TABLE IF EXISTS {table} ENABLE ROW LEVEL SECURITY;")
+            except Exception as e:
+                print(f"Note: Could not enable RLS on {table} (it might not exist yet). {e}")
+
         print("Database setup complete!")
         cursor.close()
         conn.close()
