@@ -22,6 +22,10 @@ from src.backend.agents.node4_recommender import node4_recommender
 
 app = FastAPI()
 
+# ─────────────────────────────────────────────
+# AUTH UTILITIES
+# ─────────────────────────────────────────────
+
 class LoginRequest(BaseModel):
     password: str
 
@@ -31,11 +35,31 @@ def check_ui_auth(request: Request):
         return RedirectResponse(url="/login", status_code=303)
     return None
 
-def get_api_user(request: Request):
+def get_api_user(request: Request) -> str:
     token = request.cookies.get("session_token")
     if not token:
         raise HTTPException(status_code=401, detail="Unauthorized")
     return token
+
+def get_db_connection():
+    db_url = os.environ.get("DATABASE_URL")
+    if not db_url:
+        raise ValueError("DATABASE_URL not set")
+    return psycopg2.connect(db_url)
+
+# ─────────────────────────────────────────────
+# CONFIG
+# ─────────────────────────────────────────────
+
+VOLUME_ESTIMATOR_URL = os.environ.get("VOLUME_ESTIMATOR_URL", "http://localhost:5000").rstrip("/")
+
+FRONTEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend"))
+if os.path.exists(FRONTEND_DIR):
+    app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
+
+# ─────────────────────────────────────────────
+# UI ROUTES (all require auth)
+# ─────────────────────────────────────────────
 
 @app.get("/login")
 def serve_login():
@@ -43,20 +67,12 @@ def serve_login():
 
 @app.post("/api/login")
 def login(req: LoginRequest):
-    # Default to admin123 if not set in environment
     correct = os.environ.get("ADMIN_PASSWORD", "admin123")
     if req.password == correct:
         res = JSONResponse({"success": True})
         res.set_cookie("session_token", "admin_user", httponly=True, max_age=86400*30)
         return res
     return JSONResponse({"success": False, "error": "Invalid password"}, status_code=401)
-
-
-VOLUME_ESTIMATOR_URL = os.environ.get("VOLUME_ESTIMATOR_URL", "http://localhost:5000").rstrip("/")
-
-FRONTEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend"))
-if os.path.exists(FRONTEND_DIR):
-    app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
 
 @app.get("/")
 def serve_dashboard(request: Request):
@@ -82,14 +98,24 @@ def serve_profile(request: Request):
     if auth: return auth
     return FileResponse(os.path.join(FRONTEND_DIR, "profile_health_goals", "code.html"))
 
+@app.get("/chat")
+def serve_chat(request: Request):
+    auth = check_ui_auth(request)
+    if auth: return auth
+    return FileResponse(os.path.join(FRONTEND_DIR, "nutriflow_chat", "code.html"))
+
+# ─────────────────────────────────────────────
+# FOOD SCANNING API (Nodes 1-4)
+# ─────────────────────────────────────────────
+
 @app.post("/analyze-food")
 async def analyze_food(
     request: Request,
     image: UploadFile = File(...),
     mode: str = Form("vlm")
 ):
-    user_id = get_api_user(request)
     """Step 1: Estimate volume and extract food details (Node 1)"""
+    user_id = get_api_user(request)
     image_bytes = await image.read()
     
     if mode == "vlm":
@@ -176,8 +202,8 @@ class ConfirmFoodRequest(BaseModel):
 
 @app.post("/confirm-food")
 async def confirm_food(request: Request, req: ConfirmFoodRequest):
-    user_id = get_api_user(request)
     """Step 2: Take confirmed details, run Nodes 2,3,4 and save to DB"""
+    user_id = get_api_user(request)
     try:
         state = GraphState(
             user_input="", 
@@ -203,30 +229,28 @@ async def confirm_food(request: Request, req: ConfirmFoodRequest):
         
         calc = state.calculated_nutrition or {}
         
-        # Insert into Supabase
-        db_url = os.environ.get("DATABASE_URL")
-        if db_url and calc:
-            try:
-                conn = psycopg2.connect(db_url)
-                conn.autocommit = True
-                cursor = conn.cursor()
-                cursor.execute("""
-                    INSERT INTO meal_logs (user_id, food_name, weight_g, calories, protein, carbs, fats, image_url)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                """, (
-                    user_id, 
-                    req.food_name, 
-                    calc.get("weight_g", 0), 
-                    calc.get("calories", 0), 
-                    calc.get("protein", 0), 
-                    calc.get("carbs", 0), 
-                    calc.get("fats", 0), 
-                    req.image_url or ""
-                ))
-                cursor.close()
-                conn.close()
-            except Exception as e:
-                print(f"Error logging meal: {e}")
+        # Insert into DB
+        try:
+            conn = get_db_connection()
+            conn.autocommit = True
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO meal_logs (user_id, food_name, weight_g, calories, protein, carbs, fats, image_url)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """, (
+                user_id, 
+                req.food_name, 
+                calc.get("weight_g", 0), 
+                calc.get("calories", 0), 
+                calc.get("protein", 0), 
+                calc.get("carbs", 0), 
+                calc.get("fats", 0), 
+                req.image_url or ""
+            ))
+            cursor.close()
+            conn.close()
+        except Exception as e:
+            print(f"Error logging meal: {e}")
 
         return {
             "success": True,
@@ -241,6 +265,10 @@ async def confirm_food(request: Request, req: ConfirmFoodRequest):
             content={"success": False, "error": str(e)}
         )
 
+# ─────────────────────────────────────────────
+# PROFILE API
+# ─────────────────────────────────────────────
+
 class UserProfileRequest(BaseModel):
     name: str
     email: str
@@ -254,24 +282,19 @@ class UserProfileRequest(BaseModel):
     carbs_goal_g: float
     fats_goal_g: float
 
-def get_db_connection():
-    db_url = os.environ.get("DATABASE_URL")
-    if not db_url:
-        raise ValueError("DATABASE_URL not set")
-    return psycopg2.connect(db_url)
-
 @app.get("/api/profile")
-def get_profile():
+def get_profile(request: Request):
+    user_id = get_api_user(request)
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM user_profiles WHERE user_id = %s;", (user_id,))
         row = cursor.fetchone()
+        columns = [desc[0] for desc in cursor.description]
         cursor.close()
         conn.close()
         
         if row:
-            columns = [desc[0] for desc in cursor.description]
             profile_data = dict(zip(columns, row))
             return {"success": True, "profile": profile_data}
         return {"success": False, "error": "Profile not found"}
@@ -279,39 +302,62 @@ def get_profile():
         return {"success": False, "error": str(e)}
 
 @app.post("/api/profile")
-def update_profile(req: UserProfileRequest):
+def update_profile(request: Request, req: UserProfileRequest):
+    user_id = get_api_user(request)
     try:
         conn = get_db_connection()
         conn.autocommit = True
         cursor = conn.cursor()
-        cursor.execute(f"""
-            UPDATE user_profiles 
-            SET name=%s, email=%s, age=%s, gender=%s, height_cm=%s, weight_kg=%s, 
-                activity_level=%s, daily_calorie_target=%s, protein_goal_g=%s, 
-                carbs_goal_g=%s, fats_goal_g=%s
-            WHERE user_id={user_id};
-        """, (
-            req.name, req.email, req.age, req.gender, req.height_cm, req.weight_kg,
-            req.activity_level, req.daily_calorie_target, req.protein_goal_g,
-            req.carbs_goal_g, req.fats_goal_g
-        ))
+        
+        # Check if profile exists
+        cursor.execute("SELECT 1 FROM user_profiles WHERE user_id = %s;", (user_id,))
+        exists = cursor.fetchone()
+        
+        if exists:
+            cursor.execute("""
+                UPDATE user_profiles 
+                SET name=%s, email=%s, age=%s, gender=%s, height_cm=%s, weight_kg=%s, 
+                    activity_level=%s, daily_calorie_target=%s, protein_goal_g=%s, 
+                    carbs_goal_g=%s, fats_goal_g=%s
+                WHERE user_id=%s;
+            """, (
+                req.name, req.email, req.age, req.gender, req.height_cm, req.weight_kg,
+                req.activity_level, req.daily_calorie_target, req.protein_goal_g,
+                req.carbs_goal_g, req.fats_goal_g, user_id
+            ))
+        else:
+            cursor.execute("""
+                INSERT INTO user_profiles (user_id, name, email, age, gender, height_cm, weight_kg,
+                    activity_level, daily_calorie_target, protein_goal_g, carbs_goal_g, fats_goal_g)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+            """, (
+                user_id, req.name, req.email, req.age, req.gender, req.height_cm, req.weight_kg,
+                req.activity_level, req.daily_calorie_target, req.protein_goal_g,
+                req.carbs_goal_g, req.fats_goal_g
+            ))
+        
         cursor.close()
         conn.close()
         return {"success": True}
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+# ─────────────────────────────────────────────
+# MEAL HISTORY & DASHBOARD API
+# ─────────────────────────────────────────────
+
 @app.get("/api/history")
-def get_history():
+def get_history(request: Request):
+    user_id = get_api_user(request)
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute(f"""
+        cursor.execute("""
             SELECT id, user_id, food_name, weight_g, calories, protein, carbs, fats, image_url, created_at
             FROM meal_logs 
-            WHERE user_id = {user_id}
+            WHERE user_id = %s
             ORDER BY created_at DESC;
-        """)
+        """, (user_id,))
         rows = cursor.fetchall()
         columns = [desc[0] for desc in cursor.description]
         
@@ -329,7 +375,8 @@ def get_history():
         return {"success": False, "error": str(e)}
 
 @app.get("/api/dashboard")
-def get_dashboard():
+def get_dashboard(request: Request):
+    user_id = get_api_user(request)
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -338,12 +385,12 @@ def get_dashboard():
         from datetime import date
         today = date.today()
         
-        cursor.execute(f"""
+        cursor.execute("""
             SELECT id, food_name, weight_g, calories, protein, carbs, fats, image_url, created_at
             FROM meal_logs 
-            WHERE user_id = {user_id} AND DATE(created_at) = %s
+            WHERE user_id = %s AND DATE(created_at) = %s
             ORDER BY created_at DESC;
-        """, (today,))
+        """, (user_id, today))
         
         rows = cursor.fetchall()
         columns = [desc[0] for desc in cursor.description]
@@ -373,6 +420,10 @@ def get_dashboard():
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+# ─────────────────────────────────────────────
+# DAILY INSIGHTS API (Gemini-powered)
+# ─────────────────────────────────────────────
+
 @app.get("/api/daily-insights")
 def get_daily_insights(request: Request):
     user_id = get_api_user(request)
@@ -388,18 +439,18 @@ def get_daily_insights(request: Request):
         cursor.execute("SELECT * FROM user_profiles WHERE user_id = %s;", (user_id,))
         prof_row = cursor.fetchone()
         if not prof_row:
-            return {"success": False, "error": "Profile not found"}
+            return {"success": False, "error": "Profile not found. Please set up your profile first."}
         prof_cols = [desc[0] for desc in cursor.description]
         profile = dict(zip(prof_cols, prof_row))
         
         # Get Today's Meals
         from datetime import date
         today = date.today()
-        cursor.execute(f"""
+        cursor.execute("""
             SELECT food_name, calories, protein, carbs, fats
             FROM meal_logs 
-            WHERE user_id = {user_id} AND DATE(created_at) = %s
-        """, (today,))
+            WHERE user_id = %s AND DATE(created_at) = %s
+        """, (user_id, today))
         meal_rows = cursor.fetchall()
         meal_cols = [desc[0] for desc in cursor.description]
         meals = [dict(zip(meal_cols, row)) for row in meal_rows]
@@ -407,7 +458,7 @@ def get_daily_insights(request: Request):
         cursor.close()
         conn.close()
         
-        # Initialize Gemini 2.5 Pro
+        # Initialize Gemini
         client = genai.Client(
             api_key=os.environ.get("GOOGLE_API_KEY"),
             http_options=types.HttpOptions(api_version="v1")
@@ -440,7 +491,7 @@ Output format:
 """
         
         response = client.models.generate_content(
-            model="gemini-3.1-pro-preview",
+            model="gemini-3.5-flash",
             contents=prompt,
             config=types.GenerateContentConfig(
                 tools=[{"google_search": {}}]
@@ -459,13 +510,17 @@ Output format:
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+# ─────────────────────────────────────────────
+# QUICK LOG (text bar meal logging)
+# ─────────────────────────────────────────────
+
 class QuickLogRequest(BaseModel):
     text: str
 
 @app.post("/api/quick-log")
 async def quick_log(request: Request, req: QuickLogRequest):
-    user_id = get_api_user(request)
     """Quick log a meal from a text description (no image). Runs Nodes 1-4."""
+    user_id = get_api_user(request)
     try:
         state = GraphState(user_input=req.text, image_base64=None)
         state = node1_nlp_parser(state)
@@ -474,31 +529,30 @@ async def quick_log(request: Request, req: QuickLogRequest):
         state = node4_recommender(state)
         
         calc = state.calculated_nutrition or {}
+        pq = state.parsed_query or {}
         
         # Save to DB
-        db_url = os.environ.get("DATABASE_URL")
-        if db_url and calc:
-            try:
-                conn = psycopg2.connect(db_url)
-                conn.autocommit = True
-                cursor = conn.cursor()
-                cursor.execute("""
-                    INSERT INTO meal_logs (user_id, food_name, weight_g, calories, protein, carbs, fats, image_url)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                """, (
-                    user_id,
-                    calc.get("food", req.text),
-                    calc.get("weight_g", 0),
-                    calc.get("calories", 0),
-                    calc.get("protein", 0),
-                    calc.get("carbs", 0),
-                    calc.get("fats", 0),
-                    ""
-                ))
-                cursor.close()
-                conn.close()
-            except Exception as e:
-                print(f"Error logging quick meal: {e}")
+        try:
+            conn = get_db_connection()
+            conn.autocommit = True
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO meal_logs (user_id, food_name, weight_g, calories, protein, carbs, fats, image_url)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """, (
+                user_id,
+                pq.get("food_name", req.text),
+                calc.get("weight_g", 0),
+                calc.get("calories", 0),
+                calc.get("protein", 0),
+                calc.get("carbs", 0),
+                calc.get("fats", 0),
+                ""
+            ))
+            cursor.close()
+            conn.close()
+        except Exception as e:
+            print(f"Error logging quick meal: {e}")
         
         return {
             "success": True,
@@ -508,15 +562,19 @@ async def quick_log(request: Request, req: QuickLogRequest):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+# ─────────────────────────────────────────────
+# MEAL DELETE
+# ─────────────────────────────────────────────
+
 @app.delete("/api/meal/{meal_id}")
 def delete_meal(request: Request, meal_id: int):
-    user_id = get_api_user(request)
     """Delete a meal log entry by its ID."""
+    user_id = get_api_user(request)
     try:
         conn = get_db_connection()
         conn.autocommit = True
         cursor = conn.cursor()
-        cursor.execute(f"DELETE FROM meal_logs WHERE id = %s AND user_id = {user_id}", (meal_id,))
+        cursor.execute("DELETE FROM meal_logs WHERE id = %s AND user_id = %s", (meal_id, user_id))
         deleted = cursor.rowcount
         cursor.close()
         conn.close()
@@ -526,11 +584,9 @@ def delete_meal(request: Request, meal_id: int):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-@app.get("/chat")
-def serve_chat(request: Request):
-    auth = check_ui_auth(request)
-    if auth: return auth
-    return FileResponse(os.path.join(FRONTEND_DIR, "nutriflow_chat", "code.html"))
+# ─────────────────────────────────────────────
+# AGENTIC CHATBOT
+# ─────────────────────────────────────────────
 
 @app.get("/api/chat/history")
 def get_chat_history(request: Request):
@@ -578,23 +634,23 @@ def send_chat_message(request: Request, req: ChatRequest):
             
         def get_recent_meals_tool() -> str:
             """Gets the user's logged meals for the day to analyze their intake."""
-            conn = get_db_connection()
-            cursor = conn.cursor()
-            cursor.execute("SELECT food_name, weight_g, calories, protein, carbs, fats, created_at FROM meal_logs WHERE user_id = %s ORDER BY created_at DESC LIMIT 15;", (user_id,))
-            meals = cursor.fetchall()
-            cursor.close()
-            conn.close()
+            conn2 = get_db_connection()
+            cursor2 = conn2.cursor()
+            cursor2.execute("SELECT food_name, weight_g, calories, protein, carbs, fats, created_at FROM meal_logs WHERE user_id = %s ORDER BY created_at DESC LIMIT 15;", (user_id,))
+            meals = cursor2.fetchall()
+            cursor2.close()
+            conn2.close()
             if not meals: return "No meals logged recently."
-            return "\\n".join([f"- {m[6].strftime('%Y-%m-%d %H:%M')}: {m[0]} ({m[1]}g) -> {m[2]}kcal (P:{m[3]}g, C:{m[4]}g, F:{m[5]}g)" for m in meals])
+            return "\n".join([f"- {m[6].strftime('%Y-%m-%d %H:%M')}: {m[0]} ({m[1]}g) -> {m[2]}kcal (P:{m[3]}g, C:{m[4]}g, F:{m[5]}g)" for m in meals])
             
         def get_user_profile_tool() -> str:
             """Gets the user's specific health goals, including daily calorie, protein, carbs, and fats targets."""
-            conn = get_db_connection()
-            cursor = conn.cursor()
-            cursor.execute("SELECT daily_calorie_target, protein_goal_g, carbs_goal_g, fats_goal_g FROM user_profiles WHERE user_id = %s;", (user_id,))
-            prof = cursor.fetchone()
-            cursor.close()
-            conn.close()
+            conn2 = get_db_connection()
+            cursor2 = conn2.cursor()
+            cursor2.execute("SELECT daily_calorie_target, protein_goal_g, carbs_goal_g, fats_goal_g FROM user_profiles WHERE user_id = %s;", (user_id,))
+            prof = cursor2.fetchone()
+            cursor2.close()
+            conn2.close()
             if not prof: return "No profile found."
             return f"Goals: {prof[0]} kcal, {prof[1]}g Protein, {prof[2]}g Carbs, {prof[3]}g Fats."
         
@@ -631,4 +687,3 @@ def send_chat_message(request: Request, req: ChatRequest):
         import traceback
         traceback.print_exc()
         return {"success": False, "error": str(e)}
-
