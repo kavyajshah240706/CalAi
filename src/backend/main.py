@@ -65,14 +65,20 @@ if os.path.exists(FRONTEND_DIR):
 def serve_login():
     return FileResponse(os.path.join(FRONTEND_DIR, "login", "code.html"))
 
+class LoginRequest(BaseModel):
+    username: str
+
 @app.post("/api/login")
 def login(req: LoginRequest):
-    correct = os.environ.get("ADMIN_PASSWORD", "admin123")
-    if req.password == correct:
-        res = JSONResponse({"success": True})
-        res.set_cookie("session_token", "admin_user", httponly=True, max_age=86400*30)
-        return res
-    return JSONResponse({"success": False, "error": "Invalid password"}, status_code=401)
+    username = req.username.strip().lower()
+    if not username or len(username) < 3:
+        return JSONResponse({"success": False, "error": "Username must be at least 3 characters"}, status_code=400)
+    
+    # We no longer check ADMIN_PASSWORD. We just issue a session for the username.
+    # The database already isolates all data strictly by user_id!
+    res = JSONResponse({"success": True})
+    res.set_cookie("session_token", username, httponly=True, max_age=86400*30)
+    return res
 
 @app.get("/")
 def serve_dashboard(request: Request):

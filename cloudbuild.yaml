@@ -1,11 +1,11 @@
 steps:
   # Build the Docker image
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'asia-south1-docker.pkg.dev/$PROJECT_ID/calai-repo/calai-backend:$COMMIT_SHA', '.']
+    args: ['build', '-t', 'asia-south1-docker.pkg.dev/$PROJECT_ID/calai-repo/calai-backend:latest', '.']
 
   # Push the image to Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'asia-south1-docker.pkg.dev/$PROJECT_ID/calai-repo/calai-backend:$COMMIT_SHA']
+    args: ['push', 'asia-south1-docker.pkg.dev/$PROJECT_ID/calai-repo/calai-backend:latest']
 
   # Deploy to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -15,7 +15,7 @@ steps:
       - 'deploy'
       - 'calai-backend'
       - '--image'
-      - 'asia-south1-docker.pkg.dev/$PROJECT_ID/calai-repo/calai-backend:$COMMIT_SHA'
+      - 'asia-south1-docker.pkg.dev/$PROJECT_ID/calai-repo/calai-backend:latest'
       - '--region'
       - 'asia-south1'
       - '--platform'
@@ -33,7 +33,7 @@ steps:
       - '300'
 
 images:
-  - 'asia-south1-docker.pkg.dev/$PROJECT_ID/calai-repo/calai-backend:$COMMIT_SHA'
+  - 'asia-south1-docker.pkg.dev/$PROJECT_ID/calai-repo/calai-backend:latest'
 
 options:
   logging: CLOUD_LOGGING_ONLY
