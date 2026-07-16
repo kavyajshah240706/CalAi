@@ -9,9 +9,7 @@ import json
 class GenAIEmbeddingsWrapper:
     def __init__(self, model_name="text-embedding-004"):
         self.model_name = model_name
-        self.client = genai.Client(vertexai=True, project="gemini-project-2-500616", location="us-central1"),
-            http_options=types.HttpOptions(api_version="v1")
-        )
+        self.client = genai.Client(vertexai=True, project="gemini-project-2-500616", location="us-central1")
         
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
         response = self.client.models.embed_content(
@@ -80,9 +78,7 @@ def node2_data_retrieval(state: GraphState) -> GraphState:
         return state
         
     # 2. Agentic RAG & Web Search Loop
-    client = genai.Client(vertexai=True, project="gemini-project-2-500616", location="us-central1"),
-        http_options=types.HttpOptions(api_version="v1")
-    )
+    client = genai.Client(vertexai=True, project="gemini-project-2-500616", location="us-central1")
     
     prompt = f"""
     You are a clinical nutrition extraction agent. Your goal is to find the macronutrients and density for '{food_name}'.

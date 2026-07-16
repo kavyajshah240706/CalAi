@@ -536,9 +536,7 @@ def get_daily_insights(request: Request):
         conn.close()
         
         # Initialize Gemini
-        client = genai.Client(vertexai=True, project="gemini-project-2-500616", location="us-central1"),
-            http_options=types.HttpOptions(api_version="v1")
-        )
+        client = genai.Client(vertexai=True, project="gemini-project-2-500616", location="us-central1")
         
         prompt = f"""
 You are an elite clinical sports nutritionist AI.
@@ -602,9 +600,7 @@ async def quick_log(request: Request, req: QuickLogRequest):
         from google.genai import types
         import json
         
-        client = genai.Client(vertexai=True, project="gemini-project-2-500616", location="us-central1"),
-            http_options=types.HttpOptions(api_version="v1")
-        )
+        client = genai.Client(vertexai=True, project="gemini-project-2-500616", location="us-central1")
         
         prompt = f"""Analyze this food description and estimate its nutritional content.
 Food: "{req.text}"
@@ -757,9 +753,7 @@ def send_chat_message(request: Request, req: ChatRequest):
             if not prof: return "No profile found."
             return f"Goals: {prof[0]} kcal, {prof[1]}g Protein, {prof[2]}g Carbs, {prof[3]}g Fats."
         
-        client = genai.Client(vertexai=True, project="gemini-project-2-500616", location="us-central1"),
-            http_options=types.HttpOptions(api_version="v1")
-        )
+        client = genai.Client(vertexai=True, project="gemini-project-2-500616", location="us-central1")
         
         sys_prompt = "You are CalAi AI, an elite clinical sports nutritionist. You are autonomous. Call get_user_profile_tool to check goals, or get_recent_meals_tool to see what they ate today if they ask about it. You can also use google_search to look up external nutritional facts."
         

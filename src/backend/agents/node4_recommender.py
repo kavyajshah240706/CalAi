@@ -13,9 +13,7 @@ def node4_recommender(state: GraphState) -> GraphState:
     if not state.calculated_nutrition:
         return state
         
-    client = genai.Client(vertexai=True, project="gemini-project-2-500616", location="us-central1"),
-        http_options=types.HttpOptions(api_version="v1")
-    )
+    client = genai.Client(vertexai=True, project="gemini-project-2-500616", location="us-central1")
     
     system_prompt = f"""You are an elite clinical sports nutritionist. Analyze the calculated meal macros: 
     {state.calculated_nutrition}. 
