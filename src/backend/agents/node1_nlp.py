@@ -17,7 +17,7 @@ def node1_nlp_parser(state: GraphState) -> GraphState:
     Uses Gemini Vision to identify the food and validate the volume estimate.
     """
     user_input = state.user_input
-    client = genai.Client(vertexai=True, project="gemini-project-2-500616", location="us-central1")
+    client = genai.Client(vertexai=True, project="gemini-project-2-500616", location="global")
     
     prompt_text = f"""You are an expert food identification and portion estimation AI.
 

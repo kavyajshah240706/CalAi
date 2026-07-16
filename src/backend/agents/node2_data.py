@@ -9,7 +9,7 @@ import json
 class GenAIEmbeddingsWrapper:
     def __init__(self, model_name="text-embedding-004"):
         self.model_name = model_name
-        self.client = genai.Client(vertexai=True, project="gemini-project-2-500616", location="us-central1")
+        self.client = genai.Client(vertexai=True, project="gemini-project-2-500616", location="global")
         
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
         response = self.client.models.embed_content(
@@ -78,7 +78,7 @@ def node2_data_retrieval(state: GraphState) -> GraphState:
         return state
         
     # 2. Agentic RAG & Web Search Loop
-    client = genai.Client(vertexai=True, project="gemini-project-2-500616", location="us-central1")
+    client = genai.Client(vertexai=True, project="gemini-project-2-500616", location="global")
     
     prompt = f"""
     You are a clinical nutrition extraction agent. Your goal is to find the macronutrients and density for '{food_name}'.
@@ -96,7 +96,7 @@ def node2_data_retrieval(state: GraphState) -> GraphState:
         # Initialize the Chat Session with Automatic Function Calling
         # The SDK will automatically execute the Python functions and feed the results back!
         chat = client.chats.create(
-            model="gemini-1.5-flash",
+            model="gemini-3.5-flash",
             config=types.GenerateContentConfig(
                 temperature=0.1,
                 tools=[get_rag_context, get_firecrawl_context]

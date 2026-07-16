@@ -536,7 +536,7 @@ def get_daily_insights(request: Request):
         conn.close()
         
         # Initialize Gemini
-        client = genai.Client(vertexai=True, project="gemini-project-2-500616", location="us-central1")
+        client = genai.Client(vertexai=True, project="gemini-project-2-500616", location="global")
         
         prompt = f"""
 You are an elite clinical sports nutritionist AI.
@@ -565,7 +565,7 @@ Output format:
 """
         
         response = client.models.generate_content(
-            model="gemini-1.5-flash",
+            model="gemini-3.5-flash",
             contents=prompt,
             config=types.GenerateContentConfig(
                 tools=[{"google_search": {}}]
@@ -600,7 +600,7 @@ async def quick_log(request: Request, req: QuickLogRequest):
         from google.genai import types
         import json
         
-        client = genai.Client(vertexai=True, project="gemini-project-2-500616", location="us-central1")
+        client = genai.Client(vertexai=True, project="gemini-project-2-500616", location="global")
         
         prompt = f"""Analyze this food description and estimate its nutritional content.
 Food: "{req.text}"
@@ -611,7 +611,7 @@ Return ONLY a valid JSON object with these exact keys:
 Be accurate. Use standard nutritional databases as reference. Return ONLY the JSON, no markdown, no extra text."""
         
         response = client.models.generate_content(
-            model="gemini-1.5-flash",
+            model="gemini-3.5-flash",
             contents=prompt,
             config=types.GenerateContentConfig(temperature=0.1)
         )
@@ -753,12 +753,12 @@ def send_chat_message(request: Request, req: ChatRequest):
             if not prof: return "No profile found."
             return f"Goals: {prof[0]} kcal, {prof[1]}g Protein, {prof[2]}g Carbs, {prof[3]}g Fats."
         
-        client = genai.Client(vertexai=True, project="gemini-project-2-500616", location="us-central1")
+        client = genai.Client(vertexai=True, project="gemini-project-2-500616", location="global")
         
         sys_prompt = "You are CalAi AI, an elite clinical sports nutritionist. You are autonomous. Call get_user_profile_tool to check goals, or get_recent_meals_tool to see what they ate today if they ask about it. You can also use google_search to look up external nutritional facts."
         
         chat = client.chats.create(
-            model="gemini-1.5-flash",
+            model="gemini-3.5-flash",
             config=types.GenerateContentConfig(
                 system_instruction=sys_prompt,
                 temperature=0.4,
