@@ -14,7 +14,7 @@ def test_api():
 
     print("\n--- Testing Embedding Model: text-embedding-004 ---")
     try:
-        client = genai.Client(http_options=types.HttpOptions(api_version="v1"))
+        client = genai.Client(vertexai=True, project="gemini-project-2-500616", location="us-central1"))
         response = client.models.embed_content(
             model="text-embedding-004",
             contents="Hello world"
@@ -26,9 +26,9 @@ def test_api():
 
     print("\n--- Testing Chat Model: gemini-3.5-flash ---")
     try:
-        client = genai.Client(http_options=types.HttpOptions(api_version="v1"))
+        client = genai.Client(vertexai=True, project="gemini-project-2-500616", location="us-central1"))
         response = client.models.generate_content(
-            model="gemini-3.5-flash",
+            model="gemini-1.5-flash",
             contents="Say the word 'Nutrition'",
             config=types.GenerateContentConfig(temperature=0)
         )

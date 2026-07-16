@@ -9,8 +9,7 @@ import json
 class GenAIEmbeddingsWrapper:
     def __init__(self, model_name="text-embedding-004"):
         self.model_name = model_name
-        self.client = genai.Client(
-            api_key=os.environ.get("GOOGLE_API_KEY"),
+        self.client = genai.Client(vertexai=True, project="gemini-project-2-500616", location="us-central1"),
             http_options=types.HttpOptions(api_version="v1")
         )
         
@@ -81,8 +80,7 @@ def node2_data_retrieval(state: GraphState) -> GraphState:
         return state
         
     # 2. Agentic RAG & Web Search Loop
-    client = genai.Client(
-        api_key=os.environ.get("GOOGLE_API_KEY"),
+    client = genai.Client(vertexai=True, project="gemini-project-2-500616", location="us-central1"),
         http_options=types.HttpOptions(api_version="v1")
     )
     
@@ -102,7 +100,7 @@ def node2_data_retrieval(state: GraphState) -> GraphState:
         # Initialize the Chat Session with Automatic Function Calling
         # The SDK will automatically execute the Python functions and feed the results back!
         chat = client.chats.create(
-            model="gemini-3.5-flash",
+            model="gemini-1.5-flash",
             config=types.GenerateContentConfig(
                 temperature=0.1,
                 tools=[get_rag_context, get_firecrawl_context]

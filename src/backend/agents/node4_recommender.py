@@ -13,8 +13,7 @@ def node4_recommender(state: GraphState) -> GraphState:
     if not state.calculated_nutrition:
         return state
         
-    client = genai.Client(
-        api_key=os.environ.get("GOOGLE_API_KEY"),
+    client = genai.Client(vertexai=True, project="gemini-project-2-500616", location="us-central1"),
         http_options=types.HttpOptions(api_version="v1")
     )
     
@@ -28,7 +27,7 @@ def node4_recommender(state: GraphState) -> GraphState:
     
     try:
         chat = client.chats.create(
-            model="gemini-3.5-flash",
+            model="gemini-1.5-flash",
             config=types.GenerateContentConfig(
                 system_instruction=system_prompt,
                 temperature=0.2,

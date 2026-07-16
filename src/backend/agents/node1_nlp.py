@@ -17,8 +17,7 @@ def node1_nlp_parser(state: GraphState) -> GraphState:
     Uses Gemini Vision to identify the food and validate the volume estimate.
     """
     user_input = state.user_input
-    client = genai.Client(
-        api_key=os.environ.get("GOOGLE_API_KEY"),
+    client = genai.Client(vertexai=True, project="gemini-project-2-500616", location="us-central1"),
         http_options=types.HttpOptions(api_version="v1")
     )
     
