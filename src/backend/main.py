@@ -287,17 +287,29 @@ def get_profile(request: Request):
     user_id = get_api_user(request)
     try:
         conn = get_db_connection()
+        conn.autocommit = True
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM user_profiles WHERE user_id = %s;", (user_id,))
         row = cursor.fetchone()
         columns = [desc[0] for desc in cursor.description]
+        
+        if not row:
+            # Auto-create a default profile for new users
+            print(f"[profile] No profile for '{user_id}', creating default...")
+            cursor.execute("""
+                INSERT INTO user_profiles (user_id, name, email, age, gender, height_cm, weight_kg, 
+                    activity_level, daily_calorie_target, protein_goal_g, carbs_goal_g, fats_goal_g)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+            """, (user_id, 'New User', '', 25, 'Male', 170, 70, 'Moderately Active', 2000, 150, 250, 65))
+            cursor.execute("SELECT * FROM user_profiles WHERE user_id = %s;", (user_id,))
+            row = cursor.fetchone()
+            columns = [desc[0] for desc in cursor.description]
+        
         cursor.close()
         conn.close()
         
-        if row:
-            profile_data = dict(zip(columns, row))
-            return {"success": True, "profile": profile_data}
-        return {"success": False, "error": "Profile not found"}
+        profile_data = dict(zip(columns, row))
+        return {"success": True, "profile": profile_data}
     except Exception as e:
         return {"success": False, "error": str(e)}
 
@@ -519,17 +531,43 @@ class QuickLogRequest(BaseModel):
 
 @app.post("/api/quick-log")
 async def quick_log(request: Request, req: QuickLogRequest):
-    """Quick log a meal from a text description (no image). Runs Nodes 1-4."""
+    """Quick log a meal from text. Uses a single fast Gemini call instead of the full 4-node pipeline."""
     user_id = get_api_user(request)
     try:
-        state = GraphState(user_input=req.text, image_base64=None)
-        state = node1_nlp_parser(state)
-        state = node2_data_retrieval(state)
-        state = node3_math_engine(state)
-        state = node4_recommender(state)
+        from google import genai
+        from google.genai import types
+        import json
         
-        calc = state.calculated_nutrition or {}
-        pq = state.parsed_query or {}
+        client = genai.Client(
+            api_key=os.environ.get("GOOGLE_API_KEY"),
+            http_options=types.HttpOptions(api_version="v1")
+        )
+        
+        prompt = f"""Analyze this food description and estimate its nutritional content.
+Food: "{req.text}"
+
+Return ONLY a valid JSON object with these exact keys:
+{{"food_name": "name of the food", "weight_g": estimated_weight_in_grams, "calories": estimated_kcal, "protein": grams, "carbs": grams, "fats": grams}}
+
+Be accurate. Use standard nutritional databases as reference. Return ONLY the JSON, no markdown, no extra text."""
+        
+        response = client.models.generate_content(
+            model="gemini-3.5-flash",
+            contents=prompt,
+            config=types.GenerateContentConfig(temperature=0.1)
+        )
+        
+        # Parse the JSON from Gemini's response
+        raw = response.text.strip()
+        # Strip markdown code fences if present
+        if raw.startswith("```"):
+            raw = raw.split("\n", 1)[1] if "\n" in raw else raw[3:]
+            if raw.endswith("```"):
+                raw = raw[:-3]
+            raw = raw.strip()
+        
+        calc = json.loads(raw)
+        food_name = calc.get("food_name", req.text)
         
         # Save to DB
         try:
@@ -541,7 +579,7 @@ async def quick_log(request: Request, req: QuickLogRequest):
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             """, (
                 user_id,
-                pq.get("food_name", req.text),
+                food_name,
                 calc.get("weight_g", 0),
                 calc.get("calories", 0),
                 calc.get("protein", 0),
@@ -557,9 +595,11 @@ async def quick_log(request: Request, req: QuickLogRequest):
         return {
             "success": True,
             "calculated_nutrition": calc,
-            "recommendations": state.recommendations
+            "recommendations": f"Logged {food_name} successfully!"
         }
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return {"success": False, "error": str(e)}
 
 # ─────────────────────────────────────────────

@@ -96,13 +96,13 @@ def setup_database():
         """)
         
         # Insert default profile if empty
-        cursor.execute("SELECT COUNT(*) FROM user_profiles WHERE user_id = 'test_user';")
+        cursor.execute("SELECT COUNT(*) FROM user_profiles WHERE user_id = 'admin_user';")
         if cursor.fetchone()[0] == 0:
             print("Inserting default user profile...")
             cursor.execute("""
                 INSERT INTO user_profiles (user_id, name, email, age, gender, height_cm, weight_kg, activity_level, daily_calorie_target, protein_goal_g, carbs_goal_g, fats_goal_g)
                 VALUES 
-                ('test_user', 'Alex Mercer', 'alex.mercer@example.com', 32, 'Male', 180, 75.5, 'Moderately Active', 2450, 160, 245, 82);
+                ('admin_user', 'Alex Mercer', 'alex.mercer@example.com', 32, 'Male', 180, 75.5, 'Moderately Active', 2450, 160, 245, 82);
             """)
 
         # Enable Row Level Security (RLS) on all public tables to prevent Supabase warnings
