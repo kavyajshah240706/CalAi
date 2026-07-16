@@ -6,18 +6,18 @@
   <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql" alt="PostgreSQL" />
 </div>
 
-<h1 align="center">NutriFlow AI 🥗</h1>
+<h1 align="center">CalAi AI 🥗</h1>
 
 <p align="center">
   <b>The next-generation, agentic AI clinical sports nutritionist.</b> <br>
-  NutriFlow AI autonomously estimates meal volume from photos, cross-references clinical density databases via pgvector, scrapes live nutritional data via Firecrawl, and synthesizes personalized macronutrient advice based on your health goals.
+  CalAi AI autonomously estimates meal volume from photos, cross-references clinical density databases via pgvector, scrapes live nutritional data via Firecrawl, and synthesizes personalized macronutrient advice based on your health goals.
 </p>
 
 ---
 
 ## 🌟 Key Features
 
-*   **📸 Visual Volume Estimation:** Upload a picture of your food. NutriFlow's Vision-Language Model visually assesses the plate, identifying the food and estimating serving volume without needing depth sensors.
+*   **📸 Visual Volume Estimation:** Upload a picture of your food. CalAi's Vision-Language Model visually assesses the plate, identifying the food and estimating serving volume without needing depth sensors.
 *   **🤖 Agentic RAG Pipeline:** Our LLM isn't just a chatbot—it's an autonomous agent. Using Google Gemini 3.5's Native Function Calling, the agent actively orchestrates between internal `pgvector` similarity searches and live `Firecrawl` web scraping to accurately calculate macros.
 *   **🔒 Multi-Tenant Security:** Built for scale. Features a custom JWT/Cookie-based authentication system with strict Row-Level Security (RLS). Every logged meal, chat message, and health goal is mathematically isolated to your unique `user_id`.
 *   **💬 Autonomous Chatbot:** Chat with an AI Nutritionist that actually remembers you. The agent has tools to query your PostgreSQL health profile and fetch today's logged meals *before* giving you advice.
@@ -27,7 +27,7 @@
 
 ## 🏗️ Architecture & Flow
 
-NutriFlow operates on a **4-Node LangGraph Architecture** to process food scans. 
+CalAi operates on a **4-Node LangGraph Architecture** to process food scans. 
 
 ```mermaid
 graph TD
@@ -52,7 +52,7 @@ graph TD
 
 ### 🧠 How the Agentic Chatbot Works
 
-Traditional chatbots are passive. NutriFlow's chatbot is an active agent powered by a dynamic `while` loop using Native Function Calling.
+Traditional chatbots are passive. CalAi's chatbot is an active agent powered by a dynamic `while` loop using Native Function Calling.
 
 ```mermaid
 sequenceDiagram
@@ -103,7 +103,7 @@ This application is deployed using a `render.yaml` Blueprint.
 
 ## 👨‍💻 Local Development Setup
 
-If you wish to run NutriFlow AI locally:
+If you wish to run CalAi AI locally:
 
 ### 1. Clone & Install
 ```bash

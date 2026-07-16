@@ -5,7 +5,7 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NutriFlow - Secure Login</title>
+    <title>CalAi - Secure Login</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script id="tailwind-config">
@@ -62,59 +62,103 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                 </svg>
             </div>
-            <h1 class="text-3xl font-bold text-on-surface">Welcome to NutriFlow</h1>
+            <h1 class="text-3xl font-bold text-on-surface">Welcome to CalAi</h1>
             <p class="text-sm text-on-surface-variant mt-2">Enter a unique username to access your dashboard</p>
         </div>
 
-        <form id="loginForm" class="space-y-6">
-            <div>
-                <label class="block text-sm font-medium text-on-surface-variant mb-1">Username</label>
-                <input type="text" id="username" required minlength="3"
-                    class="w-full px-4 py-3 rounded-xl bg-white/50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                    placeholder="e.g. johndoe">
+        <div class="space-y-4">
+            <!-- Google Sign-In Button Container -->
+            <div id="g_id_onload"
+                 data-client_id="YOUR_GOOGLE_CLIENT_ID_HERE"
+                 data-context="signin"
+                 data-ux_mode="popup"
+                 data-callback="handleCredentialResponse"
+                 data-auto_prompt="false">
             </div>
 
-            <div id="errorMessage" class="hidden text-red-500 text-sm text-center font-medium bg-red-50 rounded-lg py-2"></div>
+            <div class="g_id_signin w-full flex justify-center"
+                 data-type="standard"
+                 data-shape="rectangular"
+                 data-theme="outline"
+                 data-text="signin_with"
+                 data-size="large"
+                 data-logo_alignment="left">
+            </div>
 
-            <button type="submit" id="submitBtn"
-                class="w-full py-3 px-4 bg-primary hover:bg-emerald-600 text-white font-semibold rounded-xl shadow-lg shadow-primary/30 transition-all transform hover:-translate-y-0.5 flex items-center justify-center">
-                <span>Start Tracking</span>
+            <div class="relative flex items-center py-2">
+                <div class="flex-grow border-t border-gray-200"></div>
+                <span class="flex-shrink-0 mx-4 text-sm text-gray-400">or</span>
+                <div class="flex-grow border-t border-gray-200"></div>
+            </div>
+
+            <button type="button" id="demoBtn"
+                class="w-full py-3 px-4 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-xl border border-gray-200 shadow-sm transition-all flex items-center justify-center gap-2">
+                <span>Try Demo Mode</span>
             </button>
-        </form>
+
+            <div id="errorMessage" class="hidden text-red-500 text-sm text-center font-medium bg-red-50 rounded-lg py-2 mt-4"></div>
+        </div>
     </div>
 
-    <script>
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const username = document.getElementById('username').value;
-            const btn = document.getElementById('submitBtn');
-            const errorDiv = document.getElementById('errorMessage');
-            
-            btn.disabled = true;
-            btn.innerHTML = '<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
-            errorDiv.classList.add('hidden');
+    <!-- Google Identity Services Script -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 
+    <script>
+        // Handle Google Auth Response
+        async function handleCredentialResponse(response) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.classList.add('hidden');
+            
             try {
-                const res = await fetch('/api/login', {
+                const res = await fetch('/api/auth/google', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ username })
+                    body: JSON.stringify({ credential: response.credential })
                 });
                 const data = await res.json();
                 
                 if (data.success) {
                     window.location.href = '/';
                 } else {
-                    errorDiv.textContent = data.error || 'Invalid username';
+                    errorDiv.textContent = data.error || 'Google Sign-In failed';
+                    errorDiv.classList.remove('hidden');
+                }
+            } catch (err) {
+                errorDiv.textContent = 'Server connection failed';
+                errorDiv.classList.remove('hidden');
+            }
+        }
+
+        // Handle Demo Button
+        document.getElementById('demoBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('demoBtn');
+            const errorDiv = document.getElementById('errorMessage');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<svg class="animate-spin h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+            errorDiv.classList.add('hidden');
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ username: 'demo_user' })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    window.location.href = '/';
+                } else {
+                    errorDiv.textContent = data.error || 'Demo login failed';
                     errorDiv.classList.remove('hidden');
                     btn.disabled = false;
-                    btn.innerHTML = '<span>Start Tracking</span>';
+                    btn.innerHTML = '<span>Try Demo Mode</span>';
                 }
             } catch (err) {
                 errorDiv.textContent = 'Server connection failed';
                 errorDiv.classList.remove('hidden');
                 btn.disabled = false;
-                btn.innerHTML = '<span>Start Tracking</span>';
+                btn.innerHTML = '<span>Try Demo Mode</span>';
             }
         });
     </script>

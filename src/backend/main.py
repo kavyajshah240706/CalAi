@@ -65,17 +65,51 @@ if os.path.exists(FRONTEND_DIR):
 def serve_login():
     return FileResponse(os.path.join(FRONTEND_DIR, "login", "code.html"))
 
+class GoogleLoginRequest(BaseModel):
+    credential: str
+
+@app.post("/api/auth/google")
+def google_login(req: GoogleLoginRequest):
+    try:
+        # Verify the JWT token natively via Google's tokeninfo API
+        token_info_url = f"https://oauth2.googleapis.com/tokeninfo?id_token={req.credential}"
+        response = requests.get(token_info_url)
+        if response.status_code != 200:
+            return JSONResponse({"success": False, "error": "Invalid Google token"}, status_code=401)
+            
+        data = response.json()
+        email = data.get("email", "").lower()
+        name = data.get("name", "CalAi User")
+        
+        if not email:
+            return JSONResponse({"success": False, "error": "Email not found in token"}, status_code=400)
+            
+        # Check if user profile exists, if not, create one with their real name!
+        conn = get_db_connection()
+        conn.autocommit = True
+        cursor = conn.cursor()
+        cursor.execute("SELECT user_id FROM user_profiles WHERE user_id = %s", (email,))
+        if not cursor.fetchone():
+            cursor.execute("""
+                INSERT INTO user_profiles (user_id, name, email, age, gender, height_cm, weight_kg, activity_level, daily_calorie_target, protein_goal_g, carbs_goal_g, fats_goal_g)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, (email, name, email, 30, 'other', 170.0, 70.0, 'moderate', 2000.0, 150.0, 200.0, 65.0))
+        cursor.close()
+        conn.close()
+
+        res = JSONResponse({"success": True, "email": email})
+        res.set_cookie("session_token", email, httponly=True, max_age=86400*30)
+        return res
+    except Exception as e:
+        print(f"Google auth error: {e}")
+        return JSONResponse({"success": False, "error": "Server auth error"}, status_code=500)
+
 class LoginRequest(BaseModel):
     username: str
 
 @app.post("/api/login")
 def login(req: LoginRequest):
     username = req.username.strip().lower()
-    if not username or len(username) < 3:
-        return JSONResponse({"success": False, "error": "Username must be at least 3 characters"}, status_code=400)
-    
-    # We no longer check ADMIN_PASSWORD. We just issue a session for the username.
-    # The database already isolates all data strictly by user_id!
     res = JSONResponse({"success": True})
     res.set_cookie("session_token", username, httponly=True, max_age=86400*30)
     return res
@@ -705,7 +739,7 @@ def send_chat_message(request: Request, req: ChatRequest):
             http_options=types.HttpOptions(api_version="v1")
         )
         
-        sys_prompt = "You are NutriFlow AI, an elite clinical sports nutritionist. You are autonomous. Call get_user_profile_tool to check goals, or get_recent_meals_tool to see what they ate today if they ask about it. You can also use google_search to look up external nutritional facts."
+        sys_prompt = "You are CalAi AI, an elite clinical sports nutritionist. You are autonomous. Call get_user_profile_tool to check goals, or get_recent_meals_tool to see what they ate today if they ask about it. You can also use google_search to look up external nutritional facts."
         
         chat = client.chats.create(
             model="gemini-3.5-flash",
