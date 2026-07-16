@@ -26,8 +26,7 @@ app = FastAPI()
 # AUTH UTILITIES
 # ─────────────────────────────────────────────
 
-class LoginRequest(BaseModel):
-    password: str
+# LoginRequest and GoogleLoginRequest are defined below with the auth routes
 
 def check_ui_auth(request: Request):
     token = request.cookies.get("session_token")
@@ -110,8 +109,34 @@ class LoginRequest(BaseModel):
 @app.post("/api/login")
 def login(req: LoginRequest):
     username = req.username.strip().lower()
+    if not username:
+        return JSONResponse({"success": False, "error": "Username required"}, status_code=400)
+    
+    # Auto-provision profile for demo/new users so dashboard loads properly
+    try:
+        conn = get_db_connection()
+        conn.autocommit = True
+        cursor = conn.cursor()
+        cursor.execute("SELECT user_id FROM user_profiles WHERE user_id = %s", (username,))
+        if not cursor.fetchone():
+            display_name = "Demo User" if username == "demo_user" else username.title()
+            cursor.execute("""
+                INSERT INTO user_profiles (user_id, name, email, age, gender, height_cm, weight_kg, activity_level, daily_calorie_target, protein_goal_g, carbs_goal_g, fats_goal_g)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, (username, display_name, '', 25, 'other', 170.0, 70.0, 'moderate', 2000.0, 150.0, 200.0, 65.0))
+        cursor.close()
+        conn.close()
+    except Exception as e:
+        print(f"Auto-provision profile error: {e}")
+    
     res = JSONResponse({"success": True})
     res.set_cookie("session_token", username, httponly=True, max_age=86400*30)
+    return res
+
+@app.post("/api/logout")
+def logout():
+    res = JSONResponse({"success": True})
+    res.delete_cookie("session_token")
     return res
 
 @app.get("/")
