@@ -153,6 +153,19 @@
             <span class="material-symbols-outlined">person</span>
             <span class="font-label-md text-label-md">Settings</span>
         </a>
+            <button onclick="handleLogout()" class="w-full mt-2 flex items-center space-x-3 px-4 py-3 rounded-lg text-red-500 hover:bg-red-50 transition-all duration-300">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                <span class="font-label-lg text-label-lg">Sign Out</span>
+            </button>
+            <script>
+                async function handleLogout() {
+                    try {
+                        const res = await fetch('/api/logout', { method: 'POST' });
+                        if(res.ok) window.location.href = '/login';
+                    } catch(e) { console.error('Logout failed', e); }
+                }
+            </script>
+
     </div>
     <a href="/scanner" class="w-full bg-gradient-to-r from-primary to-primary-fixed-dim text-on-primary py-3 rounded-xl shadow-lg shadow-primary/30 font-label-md text-label-md hover:scale-105 transition-all duration-300 mt-auto flex items-center justify-center no-underline">
         <span class="material-symbols-outlined mr-2 text-[20px]">add_circle</span> Log Meal
@@ -244,6 +257,19 @@
 <div class="flex justify-between items-center mb-6">
 <h3 class="font-headline-md text-headline-md text-on-surface">Macronutrients</h3>
 <a href="/profile" class="text-primary font-label-md text-label-md hover:underline no-underline">Edit Goals</a>
+            <button onclick="handleLogout()" class="w-full mt-2 flex items-center space-x-3 px-4 py-3 rounded-lg text-red-500 hover:bg-red-50 transition-all duration-300">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                <span class="font-label-lg text-label-lg">Sign Out</span>
+            </button>
+            <script>
+                async function handleLogout() {
+                    try {
+                        const res = await fetch('/api/logout', { method: 'POST' });
+                        if(res.ok) window.location.href = '/login';
+                    } catch(e) { console.error('Logout failed', e); }
+                }
+            </script>
+
 </div>
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 h-full">
 <!-- Protein -->
@@ -509,6 +535,19 @@ quickLogInput.addEventListener('keydown', (e) => {
             <span class="material-symbols-outlined text-[24px]">person</span>
             <span class="font-label-sm text-[10px] mt-1 font-medium">Profile</span>
         </a>
+            <button onclick="handleLogout()" class="w-full mt-2 flex items-center space-x-3 px-4 py-3 rounded-lg text-red-500 hover:bg-red-50 transition-all duration-300">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                <span class="font-label-lg text-label-lg">Sign Out</span>
+            </button>
+            <script>
+                async function handleLogout() {
+                    try {
+                        const res = await fetch('/api/logout', { method: 'POST' });
+                        if(res.ok) window.location.href = '/login';
+                    } catch(e) { console.error('Logout failed', e); }
+                }
+            </script>
+
     </div>
 </nav>
 
