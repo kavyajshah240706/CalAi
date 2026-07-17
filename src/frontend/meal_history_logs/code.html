@@ -145,7 +145,7 @@
 <span class="material-symbols-outlined" data-icon="settings">settings</span>
 </button>
 <button class="bg-primary text-on-primary px-4 py-2 rounded-full font-label-md text-label-md hover:bg-surface-tint transition-colors ml-2 shadow-sm">AI Analyze</button>
-<img alt="User profile avatar" class="w-8 h-8 rounded-full ml-2 object-cover" data-alt="A small, professional circular avatar profile picture of a health-conscious individual, subtle corporate modern aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDj0XdW2hajJuXjkjSsVr8uwXhwXGeVeF00TsXMwK2qzkEW_wPl-6Uyv1m5WAO1jJeupJAk9CPOdJPfW96MG9myFjcKKjJHKy7tXiIqm3fy96-GWhplBCC0pmtD6JBTG7rtonlec78Cwl5mvsoyRNOiv2pNtTLPfoFisWPxdeHYMvVj72ziHYe5mCScWooSEQ6u0DP8fcVo1lHs7F-xAmxuSSBVQTjNbE0npB5uqPq1oxA5hDRgoO4s5aEq2F4-S3cNjvWYtkFV3Vyg"/>
+<img onclick="window.location.href='/profile'" style="cursor:pointer" alt="User profile avatar" class="w-8 h-8 rounded-full ml-2 object-cover" data-alt="A small, professional circular avatar profile picture of a health-conscious individual, subtle corporate modern aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDj0XdW2hajJuXjkjSsVr8uwXhwXGeVeF00TsXMwK2qzkEW_wPl-6Uyv1m5WAO1jJeupJAk9CPOdJPfW96MG9myFjcKKjJHKy7tXiIqm3fy96-GWhplBCC0pmtD6JBTG7rtonlec78Cwl5mvsoyRNOiv2pNtTLPfoFisWPxdeHYMvVj72ziHYe5mCScWooSEQ6u0DP8fcVo1lHs7F-xAmxuSSBVQTjNbE0npB5uqPq1oxA5hDRgoO4s5aEq2F4-S3cNjvWYtkFV3Vyg"/>
 </div>
 </header>
 <!-- SideNavBar (Desktop) -->
@@ -308,7 +308,7 @@
             return `
             <article class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.04)] hover:shadow-[0px_10px_30px_rgba(0,0,0,0.08)] transition-shadow overflow-hidden flex flex-col relative border-l-4 border-l-primary-container group">
                 <div class="h-32 bg-surface-container relative">
-                    <img alt="${meal.food_name}" class="w-full h-full object-cover" src="${meal.image_url || 'https://via.placeholder.com/300?text=No+Image'}" />
+                    ${meal.image_url && meal.image_url !== "None" ? `<img alt="${meal.food_name}" class="w-full h-full object-cover" src="${meal.image_url}" />` : `<div class="w-full h-full bg-surface-container-high flex items-center justify-center text-primary"><span class="material-symbols-outlined" style="font-size: 48px">restaurant</span></div>`}
                     <div class="absolute top-2 right-2 bg-surface-container-lowest/90 backdrop-blur-sm px-2 py-1 rounded-md font-label-sm text-label-sm text-primary flex items-center gap-1 shadow-sm">
                         <span class="material-symbols-outlined text-[14px]" data-icon="auto_awesome">auto_awesome</span>
                         AI Verified
