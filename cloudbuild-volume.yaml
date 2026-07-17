@@ -21,6 +21,8 @@ steps:
       - '--platform'
       - 'managed'
       - '--allow-unauthenticated'
+      - '--service-account'
+      - 'calai-builder@gemini-project-2-500616.iam.gserviceaccount.com'
       - '--min-instances'
       - '0'
       - '--max-instances'
