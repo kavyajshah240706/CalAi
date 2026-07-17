@@ -1,0 +1,42 @@
+FROM python:3.6-slim
+
+# Fix Debian Stretch EOL apt repositories
+RUN echo "deb http://archive.debian.org/debian stretch main" > /etc/apt/sources.list && \
+    echo "deb http://archive.debian.org/debian-security stretch/updates main" >> /etc/apt/sources.list && \
+    # Bypass Release file expiration check
+    echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99no-check-valid-until
+
+# Install system dependencies required for OpenCV and scikit-image
+RUN apt-get update && apt-get install -y \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    libgl1-mesa-glx \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy requirements from the volume estimator source
+COPY src/volume_estimator/requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip==21.3.1 && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Copy the volume estimator application code
+COPY src/volume_estimator /app/food_volume_estimation
+
+# Copy the ML models so they are available inside the estimator directory
+COPY models /app/food_volume_estimation/models
+
+WORKDIR /app/food_volume_estimation
+
+# Set PYTHONPATH so absolute imports work
+ENV PYTHONPATH=/app
+
+# Expose port
+EXPOSE 5000
+
+# Run the application (bind to 0.0.0.0 for Cloud Run!)
+ENV PORT=5000
+ENV FLASK_APP=app.py
+CMD ["python", "-m", "flask", "run", "--host=0.0.0.0", "--port=5000"]

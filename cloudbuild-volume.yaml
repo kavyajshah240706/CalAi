@@ -1,0 +1,39 @@
+steps:
+  # Build the Docker image for Volume Estimator
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'asia-south1-docker.pkg.dev/$PROJECT_ID/calai-repo/calai-volume-estimator:latest', '-f', 'Dockerfile.volume', '.']
+
+  # Push the image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'asia-south1-docker.pkg.dev/$PROJECT_ID/calai-repo/calai-volume-estimator:latest']
+
+  # Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'calai-volume-estimator'
+      - '--image'
+      - 'asia-south1-docker.pkg.dev/$PROJECT_ID/calai-repo/calai-volume-estimator:latest'
+      - '--region'
+      - 'asia-south1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--min-instances'
+      - '0'
+      - '--max-instances'
+      - '3'
+      - '--memory'
+      - '4Gi'
+      - '--cpu'
+      - '2'
+      - '--timeout'
+      - '600'
+
+images:
+  - 'asia-south1-docker.pkg.dev/$PROJECT_ID/calai-repo/calai-volume-estimator:latest'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
