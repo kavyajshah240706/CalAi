@@ -23,6 +23,8 @@ steps:
       - '--allow-unauthenticated'
       - '--service-account'
       - 'calai-builder@gemini-project-2-500616.iam.gserviceaccount.com'
+      - '--port'
+      - '5000'
       - '--min-instances'
       - '0'
       - '--max-instances'
