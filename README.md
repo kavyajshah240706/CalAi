@@ -1,73 +1,78 @@
 <div align="center">
   <img src="https://img.shields.io/badge/Status-Production_Ready-brightgreen?style=for-the-badge" alt="Status" />
-  <img src="https://img.shields.io/badge/Python-3.11-blue?style=for-the-badge&logo=python" alt="Python" />
+  <img src="https://img.shields.io/badge/Python-3.10-blue?style=for-the-badge&logo=python" alt="Python" />
   <img src="https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi" alt="FastAPI" />
-  <img src="https://img.shields.io/badge/Gemini_3.5-4285F4?style=for-the-badge&logo=google" alt="Gemini" />
+  <img src="https://img.shields.io/badge/Google_Vertex_AI-4285F4?style=for-the-badge&logo=google" alt="Vertex AI" />
+  <img src="https://img.shields.io/badge/Google_Cloud_Run-4285F4?style=for-the-badge&logo=googlecloud" alt="Cloud Run" />
   <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql" alt="PostgreSQL" />
 </div>
 
-<h1 align="center">CalAi AI 🥗</h1>
+<h1 align="center">CalAi 🥗</h1>
 
 <p align="center">
   <b>The next-generation, agentic AI clinical sports nutritionist.</b> <br>
-  CalAi AI autonomously estimates meal volume from photos, cross-references clinical density databases via pgvector, scrapes live nutritional data via Firecrawl, and synthesizes personalized macronutrient advice based on your health goals.
+  CalAi autonomously estimates meal volume from photos using computer vision, identifies food via Google Vertex AI (Gemini 1.5 Flash), calculates precise macronutrients, and synthesizes personalized dietary advice based on your health goals.
 </p>
+
+<div align="center">
+  <h3>🟢 <b>Live Demo:</b> <a href="https://calai-backend-1041961183692.asia-south1.run.app" target="_blank">Try CalAi Here!</a></h3>
+</div>
 
 ---
 
 ## 🌟 Key Features
 
-*   **📸 Visual Volume Estimation:** Upload a picture of your food. CalAi's Vision-Language Model visually assesses the plate, identifying the food and estimating serving volume without needing depth sensors.
-*   **🤖 Agentic RAG Pipeline:** Our LLM isn't just a chatbot—it's an autonomous agent. Using Google Gemini 3.5's Native Function Calling, the agent actively orchestrates between internal `pgvector` similarity searches and live `Firecrawl` web scraping to accurately calculate macros.
-*   **🔒 Multi-Tenant Security:** Built for scale. Features a custom JWT/Cookie-based authentication system with strict Row-Level Security (RLS). Every logged meal, chat message, and health goal is mathematically isolated to your unique `user_id`.
-*   **💬 Autonomous Chatbot:** Chat with an AI Nutritionist that actually remembers you. The agent has tools to query your PostgreSQL health profile and fetch today's logged meals *before* giving you advice.
-*   **🚀 Zero-Downtime CI/CD:** Fully containerized into dual Docker microservices and deployed seamlessly on Render PaaS via Infrastructure-as-Code (`render.yaml`).
+*   **📸 Geometric Volume Estimation:** Upload a picture of your food. CalAi delegates the image to an independent Microservice (TensorFlow + OpenCV) to geometrically calculate the exact serving volume in milliliters using depth estimation and segmentation.
+*   **🤖 4-Node Agentic Pipeline:** Our AI isn't just a basic prompt—it's an autonomous workflow. CalAi uses a 4-node pipeline (Vision -> Data Retrieval -> Math Engine -> Clinical Recommender) powered by Gemini 1.5 Flash on Vertex AI to guarantee accurate macronutrient math.
+*   **🔒 Secure Google OAuth 2.0:** Secure, seamless login using Google OAuth. JWT tokens are verified server-side and issued as strict `HttpOnly` session cookies to prevent XSS attacks. 
+*   **💬 Autonomous Chatbot:** Chat with an AI Nutritionist that actually remembers you. The agent executes native function calls to query your PostgreSQL health profile and fetch today's logged meals *before* giving you advice.
+*   **🚀 Scalable Cloud Run Microservices:** Fully containerized into dual Docker microservices. The heavy Machine Learning models (TF 1.13 / Python 3.6) are perfectly isolated from the lightning-fast FastAPI backend (Python 3.10) to ensure zero dependency clashes and infinite scalability.
 
 ---
 
 ## 🏗️ Architecture & Flow
 
-CalAi operates on a **4-Node LangGraph Architecture** to process food scans. 
+CalAi operates on a **4-Node LangGraph-style Architecture** to process food scans. 
 
 ```mermaid
 graph TD
-    A[User Uploads Food Image] -->|FastAPI| B(Node 1: NLP & Vision Parser)
+    A[User Uploads Food Image] -->|FastAPI| V(Volume Estimator Microservice)
+    V -->|Calculated Volume (ml)| B(Node 1: NLP & Vision Parser)
     
-    subgraph "Agentic RAG Pipeline"
+    subgraph "Agentic Pipeline"
         B -->|Food Name + Volume| C{Node 2: Agentic Orchestrator}
-        C <-->|Query Internal PDF| D[(PostgreSQL pgvector DB)]
-        C <-->|Live Web Scrape| E((Firecrawl API))
+        C <-->|Retrieve Nutritional Baselines| D[(PostgreSQL DB)]
     end
     
     C -->|Retrieved Density/Macros| F(Node 3: Math Engine)
     F -->|Weight = Vol × Density| G{Node 4: Agentic Recommender}
     
     subgraph "Personalized AI"
-        G <-->|Fetch Live Context| H((Google Search))
+        G <-->|Compare against Daily Goals| H[(User Profile)]
     end
     
-    G -->|Final Nutrition + Advice| I[(Saved to User's Profile)]
+    G -->|Final Nutrition + Clinical Advice| I[(Saved to Meal Logs)]
     I --> J[Dashboard Rendered]
 ```
 
 ### 🧠 How the Agentic Chatbot Works
 
-Traditional chatbots are passive. CalAi's chatbot is an active agent powered by a dynamic `while` loop using Native Function Calling.
+Traditional chatbots are passive. CalAi's chatbot is an active agent powered by Native Function Calling.
 
 ```mermaid
 sequenceDiagram
     participant User
-    participant Chatbot (Gemini)
+    participant Chatbot (Vertex AI)
     participant Database (Tools)
     
     User->>Chatbot: "Did I eat enough protein today?"
-    Note over Chatbot: Thoughts: "I don't know their goals or what they ate."
+    Note over Chatbot: Thoughts: "I need to check their goals and logged meals."
     Chatbot->>Database: Call get_user_profile_tool()
     Database-->>Chatbot: Returns: Goal is 160g Protein
     Chatbot->>Database: Call get_recent_meals_tool()
     Database-->>Chatbot: Returns: Chicken (40g P), Eggs (12g P)
     Note over Chatbot: Thoughts: "Total is 52g. They need 108g more."
-    Chatbot->>User: "You've only eaten 52g. I recommend a protein shake..."
+    Chatbot->>User: "You've only eaten 52g today. I recommend 200g of chicken breast for dinner..."
 ```
 
 ---
@@ -75,35 +80,24 @@ sequenceDiagram
 ## 🛠️ Tech Stack
 
 ### Backend
-*   **FastAPI:** High-performance async Python framework routing all traffic.
-*   **Flask:** Lightweight microservice handling legacy Python 3.6+ CV/Volume estimation models independently.
-*   **PostgreSQL (Supabase):** Primary datastore utilizing `pgvector` for similarity search and strict Row Level Security (RLS) for multi-tenant data isolation.
+*   **FastAPI:** High-performance async Python 3.10 framework routing all traffic.
+*   **Volume Estimator Microservice:** Isolated Python 3.6 Flask container running legacy TensorFlow 1.13 Mask R-CNN models for depth estimation.
+*   **PostgreSQL:** Primary relational datastore for user health profiles and historical meal logging.
 
 ### Frontend
-*   **Vanilla HTML/JS:** Blazing fast DOM manipulation without the overhead of heavy SPA frameworks.
+*   **Vanilla HTML/JS:** Blazing fast DOM manipulation without the overhead of heavy SPA frameworks. Served statically via FastAPI.
 *   **Tailwind CSS:** Premium, glassmorphic UI design system.
 
-### AI / Data
-*   **Google Gemini 3.5 Flash:** Core LLM driving both the LangGraph pipeline and the Agentic Chatbot.
-*   **Firecrawl:** Scrapes live web documentation to fetch exact nutritional profiles when our internal database is missing exotic foods.
-*   **LangGraph:** Manages the stateful flow between Node 1 (Vision), Node 2 (RAG), Node 3 (Math), and Node 4 (Recommender).
-
----
-
-## 🚀 Deployment (Render PaaS)
-
-This application is deployed using a `render.yaml` Blueprint. 
-
-1. **GitHub Watcher:** Render monitors the `main` branch.
-2. **Containerization:** On push, Render builds the `Dockerfile` in the cloud.
-3. **Dynamic Port Binding:** The FastApi instance dynamically binds to Render's injected `$PORT`.
-4. **Environment Variables:** Secrets (`ADMIN_PASSWORD`, `DATABASE_URL`, `GOOGLE_API_KEY`) are securely injected via the Render dashboard, keeping them out of version control.
+### AI / Cloud
+*   **Google Vertex AI (Gemini 1.5 Flash):** Enterprise-grade core LLM driving both the multi-node pipeline and the Agentic Chatbot, utilizing GCP credits.
+*   **Google Cloud Run:** Serverless, scale-to-zero container orchestration hosting both microservices.
+*   **Google Cloud Build:** CI/CD pipelines defined in `cloudbuild.yaml` and `cloudbuild-volume.yaml`.
 
 ---
 
 ## 👨‍💻 Local Development Setup
 
-If you wish to run CalAi AI locally:
+If you wish to run CalAi locally:
 
 ### 1. Clone & Install
 ```bash
@@ -115,33 +109,22 @@ pip install -r requirements.txt
 ### 2. Configure Environment
 Create a `.env` file in the root directory:
 ```env
-# AI Keys
-GOOGLE_API_KEY=your_gemini_api_key
-FIRECRAWL_API_KEY=your_firecrawl_api_key
+# Google Cloud Vertex AI
+GOOGLE_APPLICATION_CREDENTIALS=path/to/your/service-account-key.json
 
 # Database
-DATABASE_URL=postgresql://postgres:[PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres
+DATABASE_URL=postgresql://username:password@localhost:5432/calai_db
 
-# Security
-ADMIN_PASSWORD=your_secure_login_password
-```
-
-### 3. Initialize Database
-Run the setup script to create the necessary tables and enable Row-Level Security:
-```bash
-python src/backend/setup_db.py
+# Microservice
+VOLUME_ESTIMATOR_URL=http://localhost:5000
 ```
 
-### 4. Run the Servers
-Start the Volume Estimator (Terminal 1):
+### 3. Run the Microservices via Docker Compose
+To easily spin up the PostgreSQL database, the FastAPI backend, and the Volume Estimator locally, use Docker Compose:
 ```bash
-python flask_server.py
+docker-compose up --build
 ```
-Start the FastAPI Backend (Terminal 2):
-```bash
-uvicorn src.backend.main:app --reload --port 8000
-```
-Visit `http://localhost:8000` in your browser and log in with your `ADMIN_PASSWORD`.
+Visit `http://localhost:8000` in your browser.
 
 ---
 <div align="center">
